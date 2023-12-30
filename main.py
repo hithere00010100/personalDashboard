@@ -14,12 +14,12 @@ class App(ctk.CTk):
         ctk.set_default_color_theme("green")
 
         # Print today view component in the global container
-        TodayView(self)
+        Inbox(self)
 
         # Execute the app
         self.mainloop()
 
-class TodayView(ctk.CTkFrame):
+class Inbox(ctk.CTkFrame):
     def __init__(self, parent):
         # Set component master
         super().__init__(master = parent)
@@ -38,55 +38,55 @@ class TodayView(ctk.CTkFrame):
         self.addTaskButton = ctk.CTkButton(self.addTaskFrame, width = 40, text = "+", command = self.addTask)
         
         # Create added tasks container
-        self.allTasksFrame = ctk.CTkScrollableFrame(self)
+        self.tasksFrame = ctk.CTkScrollableFrame(self)
 
         # Print previous widgets in the global container
         self.addTaskFrame.pack()
         self.addTaskEntry.pack(side = "left")
         self.addTaskButton.pack(side = "left")
-        self.allTasksFrame.pack()
+        self.tasksFrame.pack()
         # Print global container itself
         self.pack()
 
     def restoreTasks(self):
-        # Read tasks file, enumerate them and close their file
+        # Read tasks file, enumerate them and close saved file
+        self.tasksFile = open("tasks.txt", "r")
+        self.oldTasks = self.tasksFile.readlines()
+        self.tasksFile.close()
+
+        # Store total tasks number
+        self.tasksNumber = len(self.oldTasks)
+
+        for a in range(self.tasksNumber):
+            # Create previously added task container, checkbox and name
+            self.taskFrame = ctk.CTkFrame(self.tasksFrame)
+            self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.oldTasks[a])
+
+            # Print those widgets
+            self.taskFrame.pack(fill = "x")
+            self.taskInfo.pack(side = "left")
+
+    def addTask(self):
+        # Open tasks file, append whatever the user wrote on the entry when he presses the add button and close the saved file
+        self.tasksFile = open("tasks.txt", "a")
+        self.tasksFile.write(self.taskName.get() + "\n")
+        self.tasksFile.close()
+
+        # Open tasks file, read it line by line and close saved file
         self.tasksFile = open("tasks.txt", "r")
         self.tasks = self.tasksFile.readlines()
         self.tasksFile.close()
 
-        # Store total tasks number
-        self.tasksNumber = len(self.tasks)
+        # Create added task container, checkbox and name at the end of the list
+        self.taskFrame = ctk.CTkFrame(self.tasksFrame)
 
-        for a in range(self.tasksNumber):
-            # Create previously added task container, checkbox and name
-            self.taskFrame = ctk.CTkFrame(self.allTasksFrame)
-            self.taskCheckbox = ctk.CTkCheckBox(self.taskFrame, text = self.tasks[a])
-
-            # Print those widgets
-            self.taskFrame.pack(fill = "x")
-            self.taskCheckbox.pack(side = "left")
-
-    def addTask(self):
-        # Open tasks database file and append whatever the user wrote on the entry when he presses the add button
-        self.tasksDatabase = open("tasks.txt", "a")
-        self.tasksDatabase.write(self.taskName.get() + "\n")
-        # Close database when it finishes writing the task
-        self.tasksDatabase.close()
-
-        # Open tasks database file and read it line by line
-        self.tasksDatabase = open("tasks.txt", "r")
-        self.task = self.tasksDatabase.readlines()
-
-        # Append added task container, checkbox and name
-        self.taskFrame = ctk.CTkFrame(self.allTasksFrame)
-
-        a = len(self.task)
+        a = len(self.tasks)
         # Fix current index because it's zero based
         a -= 1
-        self.task = ctk.CTkCheckBox(self.taskFrame, text = self.task[a])
+        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.tasks[a])
 
         # Print previous widgets in the tasks container
         self.taskFrame.pack(fill = "x")
-        self.task.pack(side = "left")
+        self.taskInfo.pack(side = "left")
 
 App()
