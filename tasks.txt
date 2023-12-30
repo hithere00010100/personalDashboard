@@ -1,0 +1,5 @@
+telefono
+pc
+monitor
+mouse
+teclado
