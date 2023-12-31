@@ -41,8 +41,9 @@ class Inbox(ctk.CTkFrame):
 
         self.dbConnection.close()
 
-        # Create and print widgets, restore added tasks when reopening the app
+        # Create and print widgets, restore previously added tasks when reopening the app
         self.createWidgets()
+        self.restoreTasks()
 
     def createWidgets(self):
         # Create add task container, its entry and add button
@@ -62,22 +63,22 @@ class Inbox(ctk.CTkFrame):
         self.pack()
 
     def restoreTasks(self):
-        # Read tasks file, enumerate them and close saved file
-        self.tasksFile = open("tasks.txt", "r")
-        self.oldTasks = self.tasksFile.readlines()
-        self.tasksFile.close()
+        # Extract every row value from the name column
+        self.dbConnection = db.connect("tasks.db")
 
-        # Store total tasks number
-        self.tasksNumber = len(self.oldTasks)
+        self.dbCursor = self.dbConnection.cursor()
+        self.dbCursor.execute("SELECT * FROM inbox")
 
-        for a in range(self.tasksNumber):
-            # Create previously added task container, checkbox and name
+        for taskName in self.dbCursor.fetchall():
+            # Create task container, checkbox and name; assign that extracted database value as the name of the task
             self.taskFrame = ctk.CTkFrame(self.tasksFrame)
-            self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.oldTasks[a])
+            self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = taskName[0])
 
-            # Print those widgets
+            # Print previous widgets in the tasks container
             self.taskFrame.pack(fill = "x")
             self.taskInfo.pack(side = "left")
+
+        self.dbConnection.close()
 
     def addTask(self):
         # Store in the database whatever the user typed in the entry and save modified database
