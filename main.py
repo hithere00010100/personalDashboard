@@ -31,7 +31,6 @@ class Inbox(ctk.CTkFrame):
 
         # Create essential variables for later use
         self.taskName = ctk.StringVar()
-        self.a = 1
 
         # Create a table for inbox tasks inside the database
         self.dbConnection = db.connect("tasks.db")
@@ -88,8 +87,12 @@ class Inbox(ctk.CTkFrame):
         self.dbCursor.execute("INSERT INTO inbox (name) VALUES (?)", (self.taskName.get(),))
         self.dbConnection.commit()
 
+        # Get database rows number to use as last index to add tasks later
+        self.dbCursor.execute("SELECT COUNT(*) FROM inbox")
+        a = self.dbCursor.fetchone()[0]
+
         # Extract first row value from the name column
-        self.dbData = self.dbCursor.execute("SELECT name FROM inbox WHERE rowid = ?", (self.a,))
+        self.dbData = self.dbCursor.execute("SELECT name FROM inbox WHERE rowid = ?", (a,))
         self.dbResult = self.dbCursor.fetchone()
 
         # Create task container, checkbox and name; assign that extracted database value as the name of the task
@@ -100,9 +103,6 @@ class Inbox(ctk.CTkFrame):
         self.taskFrame.pack(fill = "x")
         self.taskInfo.pack(side = "left")
         
-        # Increase index variable so next time a task is added, it is added in the next row
-        self.a += 1
-
         self.dbConnection.close()
 
 App()
