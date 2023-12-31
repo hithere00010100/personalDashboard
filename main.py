@@ -96,11 +96,11 @@ class Inbox(ctk.CTkFrame):
 
         # Get the task name from the database
         self.cursor.execute("SELECT name FROM inbox WHERE rowid = ?", (a,))
-        self.taskName = self.cursor.fetchone()
+        self.name = self.cursor.fetchone()
 
         # Create task container and checkbox widget (assign checkbox title as the task name)
         self.taskFrame = ctk.CTkFrame(self.tasksFrame)
-        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.taskName[0])
+        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.name[0])
 
         # Print previous widgets in the added tasks container
         self.taskFrame.pack(fill = "x")
