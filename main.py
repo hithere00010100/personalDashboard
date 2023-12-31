@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
+import sqlite3 as db
 
 class App(ctk.CTk):
     def __init__(self):
@@ -12,6 +13,10 @@ class App(ctk.CTk):
         # Set app dark mode and color accent
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("green")
+
+        # Create tasks database
+        self.dbConnection = db.connect("tasks.db")
+        self.dbConnection.close()
 
         # Print today view component in the global container
         Inbox(self)
@@ -26,10 +31,18 @@ class Inbox(ctk.CTkFrame):
 
         # Create essential variables for later use
         self.taskName = ctk.StringVar()
+        self.a = 1
+
+        # Create a table for inbox tasks inside the database
+        self.dbConnection = db.connect("tasks.db")
+
+        self.dbCursor = self.dbConnection.cursor()
+        self.dbCursor.execute("CREATE TABLE IF NOT EXISTS inbox (name TEXT)")
+
+        self.dbConnection.close()
 
         # Create and print widgets, restore added tasks when reopening the app
         self.createWidgets()
-        self.restoreTasks()
 
     def createWidgets(self):
         # Create add task container, its entry and add button
@@ -67,26 +80,28 @@ class Inbox(ctk.CTkFrame):
             self.taskInfo.pack(side = "left")
 
     def addTask(self):
-        # Open tasks file, append whatever the user wrote on the entry when he presses the add button and close the saved file
-        self.tasksFile = open("tasks.txt", "a")
-        self.tasksFile.write(self.taskName.get() + "\n")
-        self.tasksFile.close()
+        # Store in the database whatever the user typed in the entry and save modified database
+        self.dbConnection = db.connect("tasks.db")
 
-        # Open tasks file, read it line by line and close saved file
-        self.tasksFile = open("tasks.txt", "r")
-        self.tasks = self.tasksFile.readlines()
-        self.tasksFile.close()
+        self.dbCursor = self.dbConnection.cursor()
+        self.dbCursor.execute("INSERT INTO inbox (name) VALUES (?)", (self.taskName.get(),))
+        self.dbConnection.commit()
 
-        # Create added task container, checkbox and name at the end of the list
+        # Extract first row value from the name column
+        self.dbData = self.dbCursor.execute("SELECT name FROM inbox WHERE rowid = ?", (self.a,))
+        self.dbResult = self.dbCursor.fetchone()
+
+        # Create task container, checkbox and name; assign that extracted database value as the name of the task
         self.taskFrame = ctk.CTkFrame(self.tasksFrame)
-
-        a = len(self.tasks)
-        # Fix current index because it's zero based
-        a -= 1
-        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.tasks[a])
+        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.dbResult[0])
 
         # Print previous widgets in the tasks container
         self.taskFrame.pack(fill = "x")
         self.taskInfo.pack(side = "left")
+        
+        # Increase index variable so next time a task is added, it is added in the next row
+        self.a += 1
+
+        self.dbConnection.close()
 
 App()
