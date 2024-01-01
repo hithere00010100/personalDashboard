@@ -39,12 +39,12 @@ class Inbox(ctk.CTkFrame):
         self.cursor = self.connection.cursor()
         self.cursor.execute("CREATE TABLE IF NOT EXISTS inbox (name TEXT)")
 
+        # Close database
+        self.connection.close()
+        
         # Create and print widgets, restore previously added tasks when relaunching the app
         self.createWidgets()
         self.restoreTasks()
-
-        # Close database when restoreTasks has finished
-        self.connection.close()
 
     def createWidgets(self):
         # Create add task container, entry and add button
@@ -64,10 +64,16 @@ class Inbox(ctk.CTkFrame):
         self.pack()
 
     def restoreTasks(self):
+        # Open database
+        self.connection = db.connect("tasks.db")
+
         # With the database open, get all the tasks
         self.cursor = self.connection.cursor()
         self.cursor.execute("SELECT * FROM inbox")
         self.tasks = self.cursor.fetchall()
+
+        # Close database
+        self.connection.close()
 
         for taskName in self.tasks:
             # Go through every task and create its container and checkbox widget (assign checkbox title as the task name)
@@ -97,6 +103,9 @@ class Inbox(ctk.CTkFrame):
         # Get the task name from the database
         self.cursor.execute("SELECT name FROM inbox WHERE rowid = ?", (a,))
         self.name = self.cursor.fetchone()
+        
+        # Close database
+        self.connection.close()
 
         # Create task container and checkbox widget (assign checkbox title as the task name)
         self.taskFrame = ctk.CTkFrame(self.tasksFrame)
@@ -105,8 +114,5 @@ class Inbox(ctk.CTkFrame):
         # Print previous widgets in the added tasks container
         self.taskFrame.pack(fill = "x")
         self.taskInfo.pack(side = "left")
-        
-        # Close database
-        self.connection.close()
 
 App()
