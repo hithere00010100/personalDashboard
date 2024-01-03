@@ -30,14 +30,14 @@ class Inbox(ctk.CTkFrame):
         super().__init__(master = parent)
 
         # Create essential variables for later use
-        self.taskName = ctk.StringVar()
+        self.entryValue = ctk.StringVar()
 
         # Open database
         self.connection = db.connect("tasks.db")
 
         # Create inbox tasks table (with task name column) in the database
         self.cursor = self.connection.cursor()
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS inbox (name TEXT)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS inbox (label TEXT)")
 
         # Close database
         self.connection.close()
@@ -49,17 +49,17 @@ class Inbox(ctk.CTkFrame):
     def createWidgets(self):
         # Create add task container, entry and add button
         self.addTaskFrame = ctk.CTkFrame(self)
-        self.addTaskEntry = ctk.CTkEntry(self.addTaskFrame, width = 170, textvariable = self.taskName)
+        self.addTaskEntry = ctk.CTkEntry(self.addTaskFrame, width = 170, textvariable = self.entryValue)
         self.addTaskButton = ctk.CTkButton(self.addTaskFrame, width = 40, text = "+", command = self.addTask)
         
         # Create added tasks container
-        self.tasksFrame = ctk.CTkScrollableFrame(self)
+        self.addedTasksFrame = ctk.CTkScrollableFrame(self)
 
         # Print previous widgets in the global container
         self.addTaskFrame.pack()
         self.addTaskEntry.pack(side = "left")
         self.addTaskButton.pack(side = "left")
-        self.tasksFrame.pack()
+        self.addedTasksFrame.pack()
         # Print global container itself
         self.pack()
 
@@ -70,15 +70,15 @@ class Inbox(ctk.CTkFrame):
         # With the database open, get all the tasks
         self.cursor = self.connection.cursor()
         self.cursor.execute("SELECT * FROM inbox")
-        self.tasks = self.cursor.fetchall()
+        self.tasksLabels = self.cursor.fetchall()
 
         # Close database
         self.connection.close()
 
-        for taskName in self.tasks:
+        for label in self.tasksLabels:
             # Go through every task and create its container and checkbox widget (assign checkbox title as the task name)
-            self.taskFrame = ctk.CTkFrame(self.tasksFrame)
-            self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = taskName[0])
+            self.taskFrame = ctk.CTkFrame(self.addedTasksFrame)
+            self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = label[0])
 
             # Print previous widgets in the added tasks container
             self.taskFrame.pack(fill = "x")
@@ -90,7 +90,7 @@ class Inbox(ctk.CTkFrame):
 
         # Append entry field text as a new task in the database
         self.cursor = self.connection.cursor()
-        self.cursor.execute("INSERT INTO inbox (name) VALUES (?)", (self.taskName.get(),))
+        self.cursor.execute("INSERT INTO inbox (label) VALUES (?)", (self.entryValue.get(),))
 
         # Save modified database
         self.connection.commit()
@@ -100,16 +100,16 @@ class Inbox(ctk.CTkFrame):
         # Use rows number as an index
         a = self.cursor.fetchone()[0]
 
-        # Get the task name from the database
-        self.cursor.execute("SELECT name FROM inbox WHERE rowid = ?", (a,))
-        self.name = self.cursor.fetchone()
+        # Get the task label from the database
+        self.cursor.execute("SELECT label FROM inbox WHERE rowid = ?", (a,))
+        self.label = self.cursor.fetchone()
         
         # Close database
         self.connection.close()
 
         # Create task container and checkbox widget (assign checkbox title as the task name)
-        self.taskFrame = ctk.CTkFrame(self.tasksFrame)
-        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.name[0])
+        self.taskFrame = ctk.CTkFrame(self.addedTasksFrame)
+        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.label[0])
 
         # Print previous widgets in the added tasks container
         self.taskFrame.pack(fill = "x")
