@@ -15,8 +15,8 @@ class App(ctk.CTk):
         ctk.set_default_color_theme("green")
 
         # Create tasks database
-        self.connection = db.connect("tasks.db")
-        self.connection.close()
+        connection = db.connect("tasks.db")
+        connection.close()
 
         # Print inbox component in the global container
         Inbox(self)
@@ -38,14 +38,14 @@ class Inbox(ctk.CTkFrame):
         self.isFirstTime = True
 
         # Open database
-        self.connection = db.connect("tasks.db")
+        connection = db.connect("tasks.db")
 
         # Create inbox tasks table (with row id and task label columns) in the database
-        self.cursor = self.connection.cursor()
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS inbox (id INTEGER, label TEXT)")
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS inbox (id INTEGER, label TEXT)")
 
         # Close database
-        self.connection.close()
+        connection.close()
         
         # Create and print widgets, restore previously added tasks when relaunching the app and start watching checkboxes states changes
         self.createWidgets()
@@ -54,31 +54,31 @@ class Inbox(ctk.CTkFrame):
 
     def createWidgets(self):
         # Create project container, name label and tasks counter
-        self.projectFrame = ctk.CTkFrame(self)
-        self.projectLabel = ctk.CTkLabel(self.projectFrame, text = "Inbox")
-        self.projectTasksNumber = ctk.CTkLabel(self.projectFrame, text = "", textvariable = self.tasksNumber)
+        projectFrame = ctk.CTkFrame(self)
+        projectLabel = ctk.CTkLabel(projectFrame, text = "Inbox")
+        projectTasksNumber = ctk.CTkLabel(projectFrame, text = "", textvariable = self.tasksNumber)
      
         # Create add task container, entry and add button
-        self.addTaskFrame = ctk.CTkFrame(self)
-        self.addTaskEntry = ctk.CTkEntry(self.addTaskFrame, width = 170, textvariable = self.entryValue)
-        self.addTaskButton = ctk.CTkButton(self.addTaskFrame, width = 40, text = "+", command = self.addTask)
+        addTaskFrame = ctk.CTkFrame(self)
+        addTaskEntry = ctk.CTkEntry(addTaskFrame, width = 170, textvariable = self.entryValue)
+        addTaskButton = ctk.CTkButton(addTaskFrame, width = 40, text = "+", command = self.addTask)
         
         # Print previous widgets in the global container
-        self.projectFrame.pack(fill = "x")
-        self.projectLabel.pack(side = "left")
-        self.projectTasksNumber.pack(side = "right")
+        projectFrame.pack(fill = "x")
+        projectLabel.pack(side = "left")
+        projectTasksNumber.pack(side = "right")
 
-        self.addTaskFrame.pack()
-        self.addTaskEntry.pack(side = "left")
-        self.addTaskButton.pack(side = "left")
+        addTaskFrame.pack()
+        addTaskEntry.pack(side = "left")
+        addTaskButton.pack(side = "left")
 
         # Print global container itself
         self.pack()
 
     def restoreTasks(self):
         # Open database
-        self.connection = db.connect("tasks.db")
-        self.cursor = self.connection.cursor()
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
         
         if self.isFirstTime == False:
             # Reset checkboxes list when a task is marked as completed
@@ -87,27 +87,27 @@ class Inbox(ctk.CTkFrame):
             self.addedTasksFrame.pack_forget()
 
             # Get inbox rows number
-            self.cursor.execute("SELECT COUNT (label) FROM inbox")
+            cursor.execute("SELECT COUNT (label) FROM inbox")
             # Use rows number as an index
-            tasksNumber = self.cursor.fetchone()[0]
+            tasksNumber = cursor.fetchone()[0]
 
             b = self.checkedTaskIndex
             c = self.checkedTaskIndex + 1
 
             for a in range(tasksNumber):
                 # Use deleted task index on other remaining tasks
-                self.cursor.execute("UPDATE inbox SET id = ? WHERE id = ?", (b, c,))
+                cursor.execute("UPDATE inbox SET id = ? WHERE id = ?", (b, c,))
                 
                 # Go to the next task to set its new index
                 c += 1
                 b += 1
             
             # Save modified database
-            self.connection.commit()
+            connection.commit()
 
         # With the database open, get all the tasks labels
-        self.cursor.execute("SELECT label FROM inbox")
-        self.tasksLabels = self.cursor.fetchall()
+        cursor.execute("SELECT label FROM inbox")
+        tasksLabels = cursor.fetchall()
 
         # Create and print added tasks container
         self.addedTasksFrame = ctk.CTkScrollableFrame(self)
@@ -115,73 +115,73 @@ class Inbox(ctk.CTkFrame):
 
         a = 0
 
-        for label in self.tasksLabels:
+        for label in tasksLabels:
             # Append something to checkboxes list and then replace that item to a checkbox variable
             self.checkboxesStates.append("X")
             self.checkboxesStates[a] = ctk.StringVar()
             
             # Go through every task and create its container, checkbox and label
-            self.taskFrame = ctk.CTkFrame(self.addedTasksFrame)
-            self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = label[0], variable=self.checkboxesStates[a])
+            taskFrame = ctk.CTkFrame(self.addedTasksFrame)
+            taskInfo = ctk.CTkCheckBox(taskFrame, text = label[0], variable = self.checkboxesStates[a])
 
             # Print previous widgets in the added tasks container
-            self.taskFrame.pack(fill = "x")
-            self.taskInfo.pack(side = "left")
+            taskFrame.pack(fill = "x")
+            taskInfo.pack(side = "left")
             
             # Go to the next checkboxes list item
             a += 1
 
         # Close database
-        self.connection.close()
+        connection.close()
         
         # Make available update tasks when a task is deleted
         self.isFirstTime = False
     
     def addTask(self):
         # Open database
-        self.connection = db.connect("tasks.db")
-        self.cursor = self.connection.cursor()
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
 
         # Get inbox rows number
-        self.cursor.execute("SELECT COUNT (label) FROM inbox")
+        cursor.execute("SELECT COUNT (label) FROM inbox")
         # Use rows number as an index
-        tasksNumber = self.cursor.fetchone()[0]
+        tasksNumber = cursor.fetchone()[0]
         a = tasksNumber + 1
         b = tasksNumber
 
         # Append entry field text as a new task in the database with an identifier
-        self.cursor.execute("INSERT INTO inbox (id, label) VALUES (?, ?)", (a, self.entryValue.get(),))
+        cursor.execute("INSERT INTO inbox (id, label) VALUES (?, ?)", (a, self.entryValue.get(),))
         # Save modified database
-        self.connection.commit()
+        connection.commit()
 
         # Append something to checkboxes list and then replace that item to a checkbox variable
         self.checkboxesStates.append("X")
         self.checkboxesStates[b] = ctk.StringVar()
 
         # Get the task label from the database
-        self.cursor.execute("SELECT label FROM inbox WHERE id = ?", (a,))
-        self.label = self.cursor.fetchone()
+        cursor.execute("SELECT label FROM inbox WHERE id = ?", (a,))
+        label = cursor.fetchone()
         
         # Close database
-        self.connection.close()
+        connection.close()
         
         # Create task container, checkbox and label
-        self.taskFrame = ctk.CTkFrame(self.addedTasksFrame)
-        self.taskInfo = ctk.CTkCheckBox(self.taskFrame, text = self.label[0], variable=self.checkboxesStates[b])
+        taskFrame = ctk.CTkFrame(self.addedTasksFrame)
+        taskInfo = ctk.CTkCheckBox(taskFrame, text = label[0], variable = self.checkboxesStates[b])
 
         # Print previous widgets in the added tasks container
-        self.taskFrame.pack(fill = "x")
-        self.taskInfo.pack(side = "left")
+        taskFrame.pack(fill = "x")
+        taskInfo.pack(side = "left")
 
     def completeTask(self):
         # Open database
-        self.connection = db.connect("tasks.db")
-        self.cursor = self.connection.cursor()
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
 
         # Get inbox rows number
-        self.cursor.execute("SELECT COUNT (label) FROM inbox")
+        cursor.execute("SELECT COUNT (label) FROM inbox")
         # Use rows number as an index
-        tasksNumber = self.cursor.fetchone()[0]
+        tasksNumber = cursor.fetchone()[0]
 
         # Update tasks counter project label
         self.tasksNumber.set(value = tasksNumber)
@@ -194,9 +194,9 @@ class Inbox(ctk.CTkFrame):
                 self.checkedTaskIndex = b
 
                 # Check every checkbox variable and delete the one that is checked
-                self.cursor.execute("DELETE FROM inbox WHERE id = ?", (b,))
+                cursor.execute("DELETE FROM inbox WHERE id = ?", (b,))
                 # Save modified database
-                self.connection.commit()
+                connection.commit()
 
                 # Rebuild remaining tasks
                 self.restoreTasks()
@@ -204,7 +204,7 @@ class Inbox(ctk.CTkFrame):
                 break
 
         # Close database
-        self.connection.close()
+        connection.close()
 
         # Keep on checking checked tasks every half second
         self.after(500, self.completeTask)
