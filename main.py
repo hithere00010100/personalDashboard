@@ -32,6 +32,7 @@ class Inbox(ctk.CTkFrame):
         # Create essential variables for later use
         self.entryValue = ctk.StringVar()
         self.checkboxesStates = []
+        self.tasksNumber = ctk.StringVar()
 
         # Set initial conditions
         self.isFirstTime = True
@@ -52,15 +53,25 @@ class Inbox(ctk.CTkFrame):
         self.completeTask()
 
     def createWidgets(self):
+        # Create project container, name label and tasks counter
+        self.projectFrame = ctk.CTkFrame(self)
+        self.projectLabel = ctk.CTkLabel(self.projectFrame, text = "Inbox")
+        self.projectTasksNumber = ctk.CTkLabel(self.projectFrame, text = "", textvariable = self.tasksNumber)
+     
         # Create add task container, entry and add button
         self.addTaskFrame = ctk.CTkFrame(self)
         self.addTaskEntry = ctk.CTkEntry(self.addTaskFrame, width = 170, textvariable = self.entryValue)
         self.addTaskButton = ctk.CTkButton(self.addTaskFrame, width = 40, text = "+", command = self.addTask)
         
         # Print previous widgets in the global container
+        self.projectFrame.pack(fill = "x")
+        self.projectLabel.pack(side = "left")
+        self.projectTasksNumber.pack(side = "right")
+
         self.addTaskFrame.pack()
         self.addTaskEntry.pack(side = "left")
         self.addTaskButton.pack(side = "left")
+
         # Print global container itself
         self.pack()
 
@@ -78,12 +89,12 @@ class Inbox(ctk.CTkFrame):
             # Get inbox rows number
             self.cursor.execute("SELECT COUNT (label) FROM inbox")
             # Use rows number as an index
-            self.tasksNumber = self.cursor.fetchone()[0]
+            tasksNumber = self.cursor.fetchone()[0]
 
             b = self.checkedTaskIndex
             c = self.checkedTaskIndex + 1
 
-            for a in range(self.tasksNumber):
+            for a in range(tasksNumber):
                 # Use deleted task index on other remaining tasks
                 self.cursor.execute("UPDATE inbox SET id = ? WHERE id = ?", (b, c,))
                 
@@ -134,9 +145,9 @@ class Inbox(ctk.CTkFrame):
         # Get inbox rows number
         self.cursor.execute("SELECT COUNT (label) FROM inbox")
         # Use rows number as an index
-        self.tasksNumber = self.cursor.fetchone()[0]
-        a = self.tasksNumber + 1
-        b = self.tasksNumber
+        tasksNumber = self.cursor.fetchone()[0]
+        a = tasksNumber + 1
+        b = tasksNumber
 
         # Append entry field text as a new task in the database with an identifier
         self.cursor.execute("INSERT INTO inbox (id, label) VALUES (?, ?)", (a, self.entryValue.get(),))
@@ -170,9 +181,12 @@ class Inbox(ctk.CTkFrame):
         # Get inbox rows number
         self.cursor.execute("SELECT COUNT (label) FROM inbox")
         # Use rows number as an index
-        self.tasksNumber = self.cursor.fetchone()[0]
+        tasksNumber = self.cursor.fetchone()[0]
 
-        for a in range(self.tasksNumber):
+        # Update tasks counter project label
+        self.tasksNumber.set(value = tasksNumber)
+
+        for a in range(tasksNumber):
             if self.checkboxesStates[a].get() == "1":
                 b = a + 1
                 
