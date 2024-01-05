@@ -57,20 +57,23 @@ class Inbox(ctk.CTkFrame):
         projectFrame = ctk.CTkFrame(self)
         projectLabel = ctk.CTkLabel(projectFrame, text = "Inbox")
         projectTasksNumber = ctk.CTkLabel(projectFrame, text = "", textvariable = self.tasksNumber)
-     
-        # Create add task container, entry and add button
-        addTaskFrame = ctk.CTkFrame(self)
-        addTaskEntry = ctk.CTkEntry(addTaskFrame, width = 170, textvariable = self.entryValue)
-        addTaskButton = ctk.CTkButton(addTaskFrame, width = 40, text = "+", command = self.addTask)
+
+        # Create added tasks container for the first time
+        self.addedTasksFrame = ctk.CTkScrollableFrame(self)
+
+        # Create add task button container and button
+        self.addTaskFrame = ctk.CTkFrame(self)
+        self.addTaskButton = ctk.CTkButton(self.addTaskFrame, text = "+", height = 30, width = 30, command = self.openAddTaskWindow)
         
         # Print previous widgets in the global container
         projectFrame.pack(fill = "x")
         projectLabel.pack(side = "left")
         projectTasksNumber.pack(side = "right")
 
-        addTaskFrame.pack()
-        addTaskEntry.pack(side = "left")
-        addTaskButton.pack(side = "left")
+        self.addedTasksFrame.pack()
+
+        self.addTaskFrame.pack(fill = "x")
+        self.addTaskButton.pack(side = "right")
 
         # Print global container itself
         self.pack()
@@ -83,8 +86,20 @@ class Inbox(ctk.CTkFrame):
         if self.isFirstTime == False:
             # Reset checkboxes list when a task is marked as completed
             self.checkboxesStates = []
-            # Unprint added task frame
+
+            # Unprint added task frame and the rest below
             self.addedTasksFrame.pack_forget()
+            self.addTaskFrame.pack_forget()
+
+            # Create added task frame, add task button frame and button itself
+            self.addedTasksFrame = ctk.CTkScrollableFrame(self)
+            self.addTaskFrame = ctk.CTkFrame(self)
+            self.addTaskButton = ctk.CTkButton(self.addTaskFrame, text = "+", height = 30, width = 30, command = self.openAddTaskWindow)
+            
+            # Print previously created widgets in the exact order
+            self.addedTasksFrame.pack()
+            self.addTaskFrame.pack(fill = "x")
+            self.addTaskButton.pack(side = "right")
 
             # Get inbox rows number
             cursor.execute("SELECT COUNT (label) FROM inbox")
@@ -109,10 +124,6 @@ class Inbox(ctk.CTkFrame):
         cursor.execute("SELECT label FROM inbox")
         tasksLabels = cursor.fetchall()
 
-        # Create and print added tasks container
-        self.addedTasksFrame = ctk.CTkScrollableFrame(self)
-        self.addedTasksFrame.pack()
-
         a = 0
 
         for label in tasksLabels:
@@ -136,7 +147,7 @@ class Inbox(ctk.CTkFrame):
         
         # Make available update tasks when a task is deleted
         self.isFirstTime = False
-    
+
     def addTask(self):
         # Open database
         connection = db.connect("tasks.db")
@@ -173,6 +184,10 @@ class Inbox(ctk.CTkFrame):
         taskFrame.pack(fill = "x")
         taskInfo.pack(side = "left")
 
+    def openAddTaskWindow(self):
+        # Open add task window
+        AddTaskWindow(self.entryValue, self.addTask)
+
     def completeTask(self):
         # Open database
         connection = db.connect("tasks.db")
@@ -208,5 +223,41 @@ class Inbox(ctk.CTkFrame):
 
         # Keep on checking checked tasks every half second
         self.after(500, self.completeTask)
+
+class AddTaskWindow(ctk.CTkToplevel):
+    def __init__(self, entryValue, addTask):
+        super().__init__()
+
+        # Set window title and size
+        self.title("")
+        self.geometry("200x100")
+        self.resizable(False, False)
+
+        # Make external attributes and methods local
+        self.entryValue = entryValue
+        self.addTask = addTask
+
+        # Create and print widgets
+        self.createWidgets()
+
+    def createWidgets(self):
+        # Create input frame, add task input and add description entry
+        inputFrame = ctk.CTkFrame(self)
+        taskNameEntry = ctk.CTkEntry(inputFrame, textvariable = self.entryValue)
+        taskDescriptionEntry = ctk.CTkEntry(inputFrame)
+
+        # Create add and cancel task button frame, add button and cancel button
+        actionButtonsFrame = ctk.CTkFrame(self)
+        cancelTaskButton = ctk.CTkButton(actionButtonsFrame, text = "Cancel", width = 1)
+        addTaskButton = ctk.CTkButton(actionButtonsFrame, text = "Add", width = 1, command = self.addTask)
+
+        # Print previously created widgets
+        inputFrame.pack()
+        taskNameEntry.pack()
+        taskDescriptionEntry.pack()
+
+        actionButtonsFrame.pack()
+        cancelTaskButton.pack(side = "left")
+        addTaskButton.pack(side = "left")
 
 App()
