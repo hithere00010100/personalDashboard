@@ -29,8 +29,10 @@ class Inbox(ctk.CTkFrame):
         # Set component master
         super().__init__(master = parent)
 
+        # Set placeholder
+        self.entryValue = ctk.StringVar(value = "Enter task name")
+        
         # Create essential variables for later use
-        self.entryValue = ctk.StringVar()
         self.checkboxesStates = []
         self.tasksNumber = ctk.StringVar()
 
@@ -184,6 +186,9 @@ class Inbox(ctk.CTkFrame):
         taskFrame.pack(fill = "x")
         taskInfo.pack(side = "left")
 
+        # Clear added task name
+        AddTaskWindow.clearPlaceholder(self)
+
     def openAddTaskWindow(self):
         # Open add task window
         AddTaskWindow(self.entryValue, self.addTask)
@@ -260,8 +265,18 @@ class AddTaskWindow(ctk.CTkToplevel):
         cancelTaskButton.pack(side = "left")
         addTaskButton.pack(side = "left")
 
+        # Clear placeholder when task name entry is focus
+        taskNameEntry.bind("<FocusIn>", lambda event: self.clearPlaceholder())
+        # Restore placeholder when task name entry losses focus
+        taskNameEntry.bind("<FocusOut>", lambda event: self.restorePlaceholder())
+
     def cancelTask(self):
         # Close add task window
         self.destroy()
 
+    def clearPlaceholder(self):
+        self.entryValue.set("")
+
+    def restorePlaceholder(self):
+        self.entryValue.set("Enter task name")
 App()
