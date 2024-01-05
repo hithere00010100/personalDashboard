@@ -1,5 +1,8 @@
+from settings import *
 import customtkinter as ctk
 import tkinter as tk
+from tkinter import messagebox
+from PIL import Image
 import sqlite3 as db
 
 class App(ctk.CTk):
@@ -7,22 +10,317 @@ class App(ctk.CTk):
         # Set window title, size and position
         super().__init__()
         self.title("")
-        self.geometry("230x400+700+200")
+        self.geometry("230x400+1600+100")
         self.resizable(False, False)
 
         # Set window dark mode and color accent
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("green")
 
+        # Set both timers initial states
+        self.isTimer1Running = ctk.BooleanVar(value = False)
+        self.isTimer2Running = ctk.BooleanVar(value = False)
+
+        # Create essential variables for later use
+        self.isBothering = ctk.BooleanVar()
+
         # Create tasks database
         connection = db.connect("tasks.db")
         connection.close()
 
-        # Print inbox component in the global container
+        # Create timers container
+        timersFrame = ctk.CTkFrame(self)
+        timersFrame.pack(fill = "x")
+
+        # Print pomodoro timer, eating timer and inbox components in the global container
+        PomodoroTimer(timersFrame, self.isTimer1Running, self.isTimer2Running, self.bother, self.isBothering)
+        EatingTimer(timersFrame, self.isTimer2Running, self.isTimer1Running, self.bother)
         Inbox(self)
+
+        # Show reminder to start a timer
+        self.bother()
 
         # Execute the app
         self.mainloop()
+
+    def bother(self):
+        if self.isTimer1Running.get() == False and self.isTimer2Running.get() == False:
+            # Tell pomodoro timer to wait before showing another unnecesary alert when no timer is running
+            self.isBothering.set(value = True)
+
+            # Show windows and pin it on the screen
+            self.state(newstate = "normal")
+            self.attributes("-topmost", True)
+            # Show the start a timer reminder and unpin window when alert is closed
+            messagebox.showerror(message = "Start a timer", type = "ok")
+            self.attributes("-topmost", False)
+            
+            # Show that reminder every minute
+            self.after(60000, self.bother)
+
+        else:
+            # Tell pomodoro timer that is okay to show an alert because there is no active alert right now
+            self.isBothering.set(value = False)
+
+class PomodoroTimer(ctk.CTkFrame):
+    def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering):
+        # Set pomodoro timer master, container color and font
+        super().__init__(master = parent, fg_color = DARKER_GRAY)
+        self.font = ctk.CTkFont(family = "Roboto", size = TIMERS_SIZE, weight = "bold")
+
+        # Make available here those external variables and methods
+        self.isTimerRunning = isTimer1Running
+        self.isTimer2Running = isTimer2Running
+        self.bother = bother
+        self.isBothering = isBothering
+        
+        # Set initial conditions
+        self.isFirstTimeRunning = True
+        self.isFocusTime = True
+        self.skip = False
+
+        # Create widgets and set timer to focus time
+        self.createWidgets()
+        self.resetTimer()
+
+    def createWidgets(self):
+        # Create reset and skip buttons' dark mode icons with the proper size
+        self.resetIcon = ctk.CTkImage(dark_image = Image.open("images/reset.png"), size = (20, 20))
+        self.skipIcon = ctk.CTkImage(dark_image = Image.open("images/skipDisabled.png"), size = (20, 20))
+
+        # Create and set time label properties
+        self.timeLabel = ctk.CTkButton(self,
+                                       width = 100,
+                                       height = 50,
+                                       fg_color = DARK_GRAY,
+                                       hover_color = LIGHT_GRAY,
+                                       command = self.triggerTimer,
+                                       font = self.font
+                                       )
+        
+        # Create buttons container
+        self.buttonsFrame = ctk.CTkFrame(self)
+
+        # Create and set reset button properties
+        self.resetButton = ctk.CTkButton(self.buttonsFrame,
+                                         width = 1,
+                                         fg_color = DARKER_GRAY,
+                                         hover_color = DARK_GRAY,
+                                         command = self.resetTimer,
+                                         text = "",
+                                         image = self.resetIcon
+                                         )
+        
+        # Create and set skip button properties
+        self.skipButton = ctk.CTkButton(self.buttonsFrame,
+                                        width = 1,
+                                        fg_color = DARKER_GRAY,
+                                        hover_color = DARK_GRAY,
+                                        command = self.skipTimer,
+                                        text = "",
+                                        image = self.skipIcon
+                                        )
+
+        # Print those widgets in the global container
+        self.timeLabel.pack()
+        self.buttonsFrame.pack()
+        self.resetButton.pack(side = "left")
+        self.skipButton.pack(side = "left")
+        # Print container itself
+        self.pack(side = "left", padx = 10)
+
+    def triggerTimer(self):
+        if self.isTimerRunning.get() == False:
+            # Put skip button enabled icon when the timer is running
+            self.skipIcon.configure(dark_image = Image.open("images/skipEnabled.png"))
+
+            # Start pomodoro timer but stop eating timer
+            self.isTimerRunning.set(value = True)
+            self.isTimer2Running.set(value = False)
+
+            if self.isFirstTimeRunning == True:
+                # Start counting but only once
+                self.updateTimer()
+                self.isFirstTimeRunning = False
+
+        else:
+            # Put skip button disabled icon when the timer is stopped
+            self.skipIcon.configure(dark_image = Image.open("images/skipDisabled.png"))
+
+            # Stop counting
+            self.isTimerRunning.set(value = False)
+
+            if self.isBothering.get() == False:
+                # Show start a timer reminder every minute as long as there's no active alerts
+                self.bother()
+
+    def updateTimer(self):
+        if self.isTimerRunning.get() == True:
+            # Reduce a second and set that reduced value in the time label
+            self.time -= 1
+            self.minutes, self.seconds = divmod(self.time, 60)
+            self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+
+            if self.time == 0 or self.skip == True:
+                if self.baseTime == FOCUS_TIME:
+                    # Set break time block if previous time was focus time
+                    self.isFocusTime = False
+
+                else:
+                    # Set focus time block if previous time was break time
+                    self.isFocusTime = True
+
+                # Turn off timer, show start a timer reminder and set time based on previous selection
+                self.triggerTimer()
+                self.resetTimer()
+
+        # Keep counting every second
+        self.after(1000, self.updateTimer)
+
+    def resetTimer(self):
+        if self.isFocusTime == True:
+            # Set focus time if current block time is focus
+            self.time = FOCUS_TIME
+        
+        else:
+            # Set break time if current block time is break
+            self.time = BREAK_TIME
+
+        # Store the complete assigned time as a base to compare later
+        self.baseTime = self.time
+
+        # Turn off skip flag and show updated time label with 35 or 10 min
+        self.skip = False
+        self.minutes, self.seconds = divmod(self.time, 60)
+        self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+
+    def skipTimer(self):
+        if self.isTimerRunning.get() == True:
+            # Turn on skip flag as long as pomodoro timer is running
+            self.skip = True
+
+class EatingTimer(ctk.CTkFrame):
+    def __init__(self, parent, isTimer2Running, isTimer1Running, bother):
+        # Set eating timer master, container color and font
+        super().__init__(master = parent, fg_color = DARKER_GRAY)
+        self.font = ctk.CTkFont(family = "Roboto", size = TIMERS_SIZE, weight = "bold")
+
+        # Make available here those external variables and methods
+        self.isTimerRunning = isTimer2Running
+        self.isTimer1Running = isTimer1Running
+        self.bother = bother
+
+        # Set initial conditions
+        self.isFirstTimeRunning = True
+        self.isLunchTime = True
+
+        # Create widgets and set timer to lunch time
+        self.createWidgets()
+        self.resetTimer()
+
+    def createWidgets(self):
+        # Create reset and switch time buttons' dark mode icons with the proper size
+        self.resetIcon = ctk.CTkImage(light_image = Image.open("images/reset.png"), size = (20, 20))
+        self.switchTimeIcon = ctk.CTkImage(light_image = Image.open("images/switchTime.png"), size = (20, 20))
+
+        # Create and set time label properties
+        self.timeLabel = ctk.CTkButton(self,
+                                       width = 100,
+                                       height = 50,
+                                       fg_color = DARK_GRAY,
+                                       hover_color = LIGHT_GRAY,
+                                       command = self.triggerTimer,
+                                       font = self.font
+                                       )
+        
+        # Create buttons container
+        self.buttonsFrame = ctk.CTkFrame(self)
+        
+        # Create and set reset button properties
+        self.resetButton = ctk.CTkButton(self.buttonsFrame,
+                                         width = 1,
+                                         fg_color = DARKER_GRAY,
+                                         hover_color = DARK_GRAY,
+                                         command = self.resetTimer,
+                                         text = "",
+                                         image = self.resetIcon
+                                         )
+        
+        # Create and set switch time button properties
+        self.switchTimeButton = ctk.CTkButton(self.buttonsFrame,
+                                              width = 1,
+                                              fg_color = DARKER_GRAY,
+                                              hover_color = DARK_GRAY,
+                                              command = self.switchTimer,
+                                              text = "",
+                                              image = self.switchTimeIcon
+                                              )
+
+        # Print those widgets in the global container
+        self.timeLabel.pack()
+        self.buttonsFrame.pack()
+        self.resetButton.pack(side = "left")
+        self.switchTimeButton.pack(side = "left")
+        # Print container itself
+        self.pack(side = "left")
+
+    def triggerTimer(self):
+        if self.isTimerRunning.get() == False:
+            # Start eating timer but stop pomodoro timer
+            self.isTimerRunning.set(value = True)
+            self.isTimer1Running.set(value = False)
+            
+            # Start timer only once
+            if(self.isFirstTimeRunning == True):
+                # Start counting but only once
+                self.isFirstTimeRunning = False
+                self.updateTimer()
+        
+        # Stop timer when stop button is pressed
+        else:
+            # Stop counting and show start a timer reminder
+            self.isTimerRunning.set(value = False)
+            self.bother()
+
+    def updateTimer(self):
+        if self.isTimerRunning.get() == True:
+            # Reduce a second and set that reduced value in the time label
+            self.time -= 1
+            self.minutes, self.seconds = divmod(self.time, 60)
+            self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+
+            if self.time == 0:
+                # Turn off timer, show start a timer reminder and set time based on current mode (lunch or dinner)
+                self.triggerTimer()
+                self.resetTimer()
+
+        # Keep counting every second
+        self.after(1000, self.updateTimer)
+
+    def resetTimer(self):
+        if self.isLunchTime == True:
+            # Set timer's time to 15 min if current moe is lunch
+            self.time = LUNCH_TIME
+
+        else:
+            # Set timer's time to 10 min if current mode is dinner
+            self.time = DINNER_TIME
+        
+        # Show updated time label with 15 or 10 min
+        self.minutes, self.seconds = divmod(self.time, 60)
+        self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+
+    def switchTimer(self):
+        if self.isLunchTime == True:
+            # Switch to dinner time when switch button is pressed and previous timer was lunch time
+            self.isLunchTime = False
+
+        else:
+            # Switch to lunch time when switch button is pressed and previous timer was dinner time
+            self.isLunchTime = True
+
+        # Show updated time label with 15 or 10 min
+        self.resetTimer()
 
 class Inbox(ctk.CTkFrame):
     def __init__(self, parent):
@@ -78,7 +376,7 @@ class Inbox(ctk.CTkFrame):
         self.addTaskButton.pack(side = "right")
 
         # Print global container itself
-        self.pack()
+        self.pack(fill = "x")
 
     def restoreTasks(self):
         # Open database

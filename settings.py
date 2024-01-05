@@ -1,0 +1,13 @@
+# Time setup
+FOCUS_TIME = 35 * 60
+BREAK_TIME = 10 * 60
+LUNCH_TIME = 15 * 60
+DINNER_TIME = 10 * 60
+
+# Font setup
+TIMERS_SIZE = 30
+
+# Color setup
+DARKER_GRAY = "#242424"
+DARK_GRAY = "#343434"
+LIGHT_GRAY = "#404040"
