@@ -6,6 +6,7 @@ DINNER_TIME = 10 * 60
 
 # Font setup
 TIMERS_SIZE = 30
+FONT_FAMILY = "Roboto"
 
 # Color setup
 DARKER_GRAY = "#242424"

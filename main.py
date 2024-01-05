@@ -64,9 +64,8 @@ class App(ctk.CTk):
 
 class PomodoroTimer(ctk.CTkFrame):
     def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering):
-        # Set pomodoro timer master, container color and font
+        # Set pomodoro timer master and container color
         super().__init__(master = parent, fg_color = DARKER_GRAY)
-        self.font = ctk.CTkFont(family = "Roboto", size = TIMERS_SIZE, weight = "bold")
 
         # Make available here those external variables and methods
         self.isTimerRunning = isTimer1Running
@@ -84,48 +83,32 @@ class PomodoroTimer(ctk.CTkFrame):
         self.resetTimer()
 
     def createWidgets(self):
+        # Set font
+        font = ctk.CTkFont(family = FONT_FAMILY, size = TIMERS_SIZE, weight = "bold")
+
         # Create reset and skip buttons' dark mode icons with the proper size
-        self.resetIcon = ctk.CTkImage(dark_image = Image.open("images/reset.png"), size = (20, 20))
+        resetIcon = ctk.CTkImage(dark_image = Image.open("images/reset.png"), size = (20, 20))
         self.skipIcon = ctk.CTkImage(dark_image = Image.open("images/skipDisabled.png"), size = (20, 20))
 
         # Create and set time label properties
-        self.timeLabel = ctk.CTkButton(self,
-                                       width = 100,
-                                       height = 50,
-                                       fg_color = DARK_GRAY,
-                                       hover_color = LIGHT_GRAY,
-                                       command = self.triggerTimer,
-                                       font = self.font
-                                       )
+        self.timeLabel = ctk.CTkButton(self, width = 100, height = 50, fg_color = DARK_GRAY, hover_color = LIGHT_GRAY, font = font, command = self.triggerTimer)
         
         # Create buttons container
-        self.buttonsFrame = ctk.CTkFrame(self)
+        buttonsFrame = ctk.CTkFrame(self)
 
         # Create and set reset button properties
-        self.resetButton = ctk.CTkButton(self.buttonsFrame,
-                                         width = 1,
-                                         fg_color = DARKER_GRAY,
-                                         hover_color = DARK_GRAY,
-                                         command = self.resetTimer,
-                                         text = "",
-                                         image = self.resetIcon
-                                         )
+        resetButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.resetTimer,
+                                    text = "", image = resetIcon)
         
         # Create and set skip button properties
-        self.skipButton = ctk.CTkButton(self.buttonsFrame,
-                                        width = 1,
-                                        fg_color = DARKER_GRAY,
-                                        hover_color = DARK_GRAY,
-                                        command = self.skipTimer,
-                                        text = "",
-                                        image = self.skipIcon
-                                        )
+        skipButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.skipTimer,
+                                   text = "", image = self.skipIcon)
 
         # Print those widgets in the global container
         self.timeLabel.pack()
-        self.buttonsFrame.pack()
-        self.resetButton.pack(side = "left")
-        self.skipButton.pack(side = "left")
+        buttonsFrame.pack()
+        resetButton.pack(side = "left")
+        skipButton.pack(side = "left")
         # Print container itself
         self.pack(side = "left", padx = 10)
 
@@ -158,8 +141,8 @@ class PomodoroTimer(ctk.CTkFrame):
         if self.isTimerRunning.get() == True:
             # Reduce a second and set that reduced value in the time label
             self.time -= 1
-            self.minutes, self.seconds = divmod(self.time, 60)
-            self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+            minutes, seconds = divmod(self.time, 60)
+            self.timeLabel.configure(text = "{:02d}:{:02d}".format(minutes, seconds))
 
             if self.time == 0 or self.skip == True:
                 if self.baseTime == FOCUS_TIME:
@@ -191,8 +174,8 @@ class PomodoroTimer(ctk.CTkFrame):
 
         # Turn off skip flag and show updated time label with 35 or 10 min
         self.skip = False
-        self.minutes, self.seconds = divmod(self.time, 60)
-        self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+        minutes, seconds = divmod(self.time, 60)
+        self.timeLabel.configure(text = "{:02d}:{:02d}".format(minutes, seconds))
 
     def skipTimer(self):
         if self.isTimerRunning.get() == True:
@@ -203,7 +186,6 @@ class EatingTimer(ctk.CTkFrame):
     def __init__(self, parent, isTimer2Running, isTimer1Running, bother):
         # Set eating timer master, container color and font
         super().__init__(master = parent, fg_color = DARKER_GRAY)
-        self.font = ctk.CTkFont(family = "Roboto", size = TIMERS_SIZE, weight = "bold")
 
         # Make available here those external variables and methods
         self.isTimerRunning = isTimer2Running
@@ -219,48 +201,33 @@ class EatingTimer(ctk.CTkFrame):
         self.resetTimer()
 
     def createWidgets(self):
+        # Set font
+        font = ctk.CTkFont(family = FONT_FAMILY, size = TIMERS_SIZE, weight = "bold")
+
         # Create reset and switch time buttons' dark mode icons with the proper size
-        self.resetIcon = ctk.CTkImage(light_image = Image.open("images/reset.png"), size = (20, 20))
-        self.switchTimeIcon = ctk.CTkImage(light_image = Image.open("images/switchTime.png"), size = (20, 20))
+        resetIcon = ctk.CTkImage(light_image = Image.open("images/reset.png"), size = (20, 20))
+        switchTimeIcon = ctk.CTkImage(light_image = Image.open("images/switchTime.png"), size = (20, 20))
 
         # Create and set time label properties
-        self.timeLabel = ctk.CTkButton(self,
-                                       width = 100,
-                                       height = 50,
-                                       fg_color = DARK_GRAY,
-                                       hover_color = LIGHT_GRAY,
-                                       command = self.triggerTimer,
-                                       font = self.font
-                                       )
+        self.timeLabel = ctk.CTkButton(self, width = 100, height = 50, fg_color = DARK_GRAY, hover_color = LIGHT_GRAY, command = self.triggerTimer,
+                                       font = font)
         
         # Create buttons container
-        self.buttonsFrame = ctk.CTkFrame(self)
+        buttonsFrame = ctk.CTkFrame(self)
         
         # Create and set reset button properties
-        self.resetButton = ctk.CTkButton(self.buttonsFrame,
-                                         width = 1,
-                                         fg_color = DARKER_GRAY,
-                                         hover_color = DARK_GRAY,
-                                         command = self.resetTimer,
-                                         text = "",
-                                         image = self.resetIcon
-                                         )
+        resetButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.resetTimer, text = "",
+                                    image = resetIcon)
         
         # Create and set switch time button properties
-        self.switchTimeButton = ctk.CTkButton(self.buttonsFrame,
-                                              width = 1,
-                                              fg_color = DARKER_GRAY,
-                                              hover_color = DARK_GRAY,
-                                              command = self.switchTimer,
-                                              text = "",
-                                              image = self.switchTimeIcon
-                                              )
+        switchTimeButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.switchTimer, text = "",
+                                         image = switchTimeIcon)
 
         # Print those widgets in the global container
         self.timeLabel.pack()
-        self.buttonsFrame.pack()
-        self.resetButton.pack(side = "left")
-        self.switchTimeButton.pack(side = "left")
+        buttonsFrame.pack()
+        resetButton.pack(side = "left")
+        switchTimeButton.pack(side = "left")
         # Print container itself
         self.pack(side = "left")
 
@@ -286,8 +253,8 @@ class EatingTimer(ctk.CTkFrame):
         if self.isTimerRunning.get() == True:
             # Reduce a second and set that reduced value in the time label
             self.time -= 1
-            self.minutes, self.seconds = divmod(self.time, 60)
-            self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+            minutes, seconds = divmod(self.time, 60)
+            self.timeLabel.configure(text = "{:02d}:{:02d}".format(minutes, seconds))
 
             if self.time == 0:
                 # Turn off timer, show start a timer reminder and set time based on current mode (lunch or dinner)
@@ -307,8 +274,8 @@ class EatingTimer(ctk.CTkFrame):
             self.time = DINNER_TIME
         
         # Show updated time label with 15 or 10 min
-        self.minutes, self.seconds = divmod(self.time, 60)
-        self.timeLabel.configure(text = "{:02d}:{:02d}".format(self.minutes, self.seconds))
+        minutes, seconds = divmod(self.time, 60)
+        self.timeLabel.configure(text = "{:02d}:{:02d}".format(minutes, seconds))
 
     def switchTimer(self):
         if self.isLunchTime == True:
@@ -577,4 +544,5 @@ class AddTaskWindow(ctk.CTkToplevel):
 
     def restorePlaceholder(self):
         self.entryValue.set("Enter task name")
+
 App()
