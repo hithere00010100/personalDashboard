@@ -248,7 +248,7 @@ class AddTaskWindow(ctk.CTkToplevel):
 
         # Create add and cancel task button frame, add button and cancel button
         actionButtonsFrame = ctk.CTkFrame(self)
-        cancelTaskButton = ctk.CTkButton(actionButtonsFrame, text = "Cancel", width = 1)
+        cancelTaskButton = ctk.CTkButton(actionButtonsFrame, text = "Cancel", width = 1, command = self.cancelTask)
         addTaskButton = ctk.CTkButton(actionButtonsFrame, text = "Add", width = 1, command = self.addTask)
 
         # Print previously created widgets
@@ -259,5 +259,9 @@ class AddTaskWindow(ctk.CTkToplevel):
         actionButtonsFrame.pack()
         cancelTaskButton.pack(side = "left")
         addTaskButton.pack(side = "left")
+
+    def cancelTask(self):
+        # Close add task window
+        self.destroy()
 
 App()
