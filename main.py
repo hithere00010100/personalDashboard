@@ -24,6 +24,7 @@ class App():
 
         # Create essential variables for later use
         self.isBothering = ctk.BooleanVar()
+        self.afterId = ctk.StringVar()
 
         # Create tasks database
         connection = db.connect("tasks.db")
@@ -34,7 +35,7 @@ class App():
         timersFrame.pack(fill = "x")
 
         # Print pomodoro timer, eating timer and inbox components in the global container
-        PomodoroTimer(timersFrame, self.isTimer1Running, self.isTimer2Running, self.bother, self.isBothering, self.window)
+        PomodoroTimer(timersFrame, self.isTimer1Running, self.isTimer2Running, self.bother, self.isBothering, self.window, self.afterId)
         EatingTimer(timersFrame, self.isTimer2Running, self.isTimer1Running, self.bother, self.window)
         Inbox(self.window)
 
@@ -56,15 +57,16 @@ class App():
             messagebox.showerror(message = "Start a timer", type = "ok")
             self.window.attributes("-topmost", False)
             
-            # Show that reminder every minute
-            self.window.after(60000, self.bother)
+            # Show that reminder every minute and store its cancel id to stop it later
+            identifier = self.window.after(60000, self.bother)
+            self.afterId.set(value = identifier)
 
         else:
             # Tell pomodoro timer that is okay to show an alert because there is no active alert right now
             self.isBothering.set(value = False)
 
 class PomodoroTimer(ctk.CTkFrame):
-    def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering, window):
+    def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering, window, afterId):
         # Set pomodoro timer master and container color
         super().__init__(master = parent, fg_color = DARKER_GRAY)
 
@@ -74,6 +76,7 @@ class PomodoroTimer(ctk.CTkFrame):
         self.bother = bother
         self.isBothering = isBothering
         self.window = window
+        self.afterId = afterId
         
         # Set initial conditions
         self.isFirstTimeRunning = True
@@ -142,6 +145,11 @@ class PomodoroTimer(ctk.CTkFrame):
 
             if self.isBothering.get() == False:
                 # Show start a timer reminder every minute as long as there's no active alerts
+                self.bother()
+
+            else:
+                # Cancel current bother loop (using its id) to start a new one
+                self.after_cancel(self.afterId.get())
                 self.bother()
 
     def updateTimer(self):
