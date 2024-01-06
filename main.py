@@ -218,8 +218,8 @@ class EatingTimer(ctk.CTkFrame):
 
         # Create keyboard shortcuts
         self.window.bind("<KeyPress-2>", lambda event: self.triggerTimer())
-        self.window.bind("<KeyPress-r>", lambda event: self.resetTimer())
-        self.window.bind("<KeyPress-s>", lambda event: self. switchTimer())
+        self.window.bind("<Alt-KeyPress-r>", lambda event: self.resetTimer())
+        self.window.bind("<Alt-KeyPress-s>", lambda event: self. switchTimer())
 
     def createWidgets(self):
         # Set font
