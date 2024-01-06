@@ -7,7 +7,7 @@ import sqlite3 as db
 
 class App():
     def __init__(self):
-        self.window = ctk.CTk()
+        self.window = ctk.CTk(fg_color = LIGHT_GRAY)
 
         # Set window title, size and position
         self.window.title("")
@@ -30,13 +30,23 @@ class App():
         connection = db.connect("tasks.db")
         connection.close()
 
-        # Create timers container
-        timersFrame = ctk.CTkFrame(self.window)
-        timersFrame.pack(fill = "x")
-
         # Print pomodoro timer, eating timer and inbox components in the global container
-        PomodoroTimer(timersFrame, self.isTimer1Running, self.isTimer2Running, self.bother, self.isBothering, self.window, self.afterId)
-        EatingTimer(timersFrame, self.isTimer2Running, self.isTimer1Running, self.bother, self.window)
+        timersFrame = TimersContainer(self.window)
+        
+        PomodoroTimer(timersFrame,
+                      self.isTimer1Running,
+                      self.isTimer2Running,
+                      self.bother,
+                      self.isBothering,
+                      self.window,
+                      self.afterId)
+        
+        EatingTimer(timersFrame,
+                    self.isTimer2Running,
+                    self.isTimer1Running,
+                    self.bother,
+                    self.window)
+        
         Inbox(self.window)
 
         # Show reminder to start a timer
@@ -64,6 +74,15 @@ class App():
         else:
             # Tell pomodoro timer that is okay to show an alert because there is no active alert right now
             self.isBothering.set(value = False)
+
+class TimersContainer(ctk.CTkFrame):
+    def __init__(self, parent):
+        # Set container master and color
+        super().__init__(master = parent,
+                         fg_color = DARKER_GRAY)
+        
+        # Print container itself
+        self.pack(fill = "x")
 
 class PomodoroTimer(ctk.CTkFrame):
     def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering, window, afterId):
@@ -93,34 +112,57 @@ class PomodoroTimer(ctk.CTkFrame):
         self.window.bind("<KeyPress-s>", lambda event: self. skipTimer())
 
     def createWidgets(self):
-        # Set font
-        font = ctk.CTkFont(family = FONT_FAMILY, size = TIMERS_SIZE, weight = "bold")
+        # Create time label font
+        font = ctk.CTkFont(family = FONT_FAMILY,
+                           size = TIMER_LABEL_SIZE,
+                           weight = "bold")
 
-        # Create reset and skip buttons' dark mode icons with the proper size
-        resetIcon = ctk.CTkImage(dark_image = Image.open("images/reset.png"), size = (20, 20))
-        self.skipIcon = ctk.CTkImage(dark_image = Image.open("images/skipDisabled.png"), size = (20, 20))
-
-        # Create and set time label properties
-        self.timeLabel = ctk.CTkButton(self, width = 100, height = 50, fg_color = DARK_GRAY, hover_color = LIGHT_GRAY, font = font, command = self.triggerTimer)
+        # Create icons for reset and skip buttons
+        resetIcon = ctk.CTkImage(dark_image = Image.open("images/reset.png"),
+                                 size = (20, 20))
         
-        # Create buttons container
-        buttonsFrame = ctk.CTkFrame(self)
+        self.skipIcon = ctk.CTkImage(dark_image = Image.open("images/skipDisabled.png"),
+                                     size = (20, 20))
 
-        # Create and set reset button properties
-        resetButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.resetTimer,
-                                    text = "", image = resetIcon)
+        # Create time interactive label
+        self.timeLabel = ctk.CTkButton(self,
+                                       width = 100,
+                                       height = 50,
+                                       fg_color = DARK_GRAY,
+                                       hover_color = LIGHT_GRAY,
+                                       command = self.triggerTimer,
+                                       text_color = WHITE,
+                                       font = font)
         
-        # Create and set skip button properties
-        skipButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.skipTimer,
-                                   text = "", image = self.skipIcon)
+        # Create buttons container, reset button and skip button
+        buttonsFrame = ctk.CTkFrame(self,
+                                    fg_color = DARKER_GRAY)
 
-        # Print those widgets in the global container
+        resetButton = ctk.CTkButton(buttonsFrame,
+                                    width = 30,
+                                    height = 30,
+                                    fg_color = DARKER_GRAY,
+                                    hover_color = DARK_GRAY,
+                                    text = "",
+                                    image = resetIcon,
+                                    command = self.resetTimer)
+        
+        skipButton = ctk.CTkButton(buttonsFrame,
+                                   width = 30,
+                                   height = 30,
+                                   fg_color = DARKER_GRAY,
+                                   hover_color = DARK_GRAY,
+                                   text = "",
+                                   image = self.skipIcon,
+                                   command = self.skipTimer)
+
+        # Print created widgets in the global container
         self.timeLabel.pack()
         buttonsFrame.pack()
         resetButton.pack(side = "left")
         skipButton.pack(side = "left")
-        # Print container itself
-        self.pack(side = "left", padx = 10)
+        # Print global container itself
+        self.pack(side = "left", padx = 10, pady = 10)
 
     def triggerTimer(self):
         if self.isTimerRunning.get() == False:
@@ -222,34 +264,56 @@ class EatingTimer(ctk.CTkFrame):
         self.window.bind("<Alt-KeyPress-s>", lambda event: self. switchTimer())
 
     def createWidgets(self):
-        # Set font
-        font = ctk.CTkFont(family = FONT_FAMILY, size = TIMERS_SIZE, weight = "bold")
+        # Create time label font
+        font = ctk.CTkFont(family = FONT_FAMILY,
+                           size = TIMER_LABEL_SIZE,
+                           weight = "bold")
 
-        # Create reset and switch time buttons' dark mode icons with the proper size
-        resetIcon = ctk.CTkImage(light_image = Image.open("images/reset.png"), size = (20, 20))
-        switchTimeIcon = ctk.CTkImage(light_image = Image.open("images/switchTime.png"), size = (20, 20))
+        # Create icons for reset and switch time buttons
+        resetIcon = ctk.CTkImage(light_image = Image.open("images/reset.png"),
+                                 size = (20, 20))
+        
+        switchTimeIcon = ctk.CTkImage(light_image = Image.open("images/switchTime.png"),
+                                      size = (20, 20))
 
-        # Create and set time label properties
-        self.timeLabel = ctk.CTkButton(self, width = 100, height = 50, fg_color = DARK_GRAY, hover_color = LIGHT_GRAY, command = self.triggerTimer,
-                                       font = font)
+        # Create time interactive label
+        self.timeLabel = ctk.CTkButton(self,
+                                       width = 100,
+                                       height = 50,
+                                       fg_color = DARK_GRAY,
+                                       hover_color = LIGHT_GRAY,
+                                       text_color = WHITE,
+                                       font = font,
+                                       command = self.triggerTimer)
         
-        # Create buttons container
-        buttonsFrame = ctk.CTkFrame(self)
+        # Create buttons container, reset button and switch time button
+        buttonsFrame = ctk.CTkFrame(self,
+                                    fg_color = DARKER_GRAY)
         
-        # Create and set reset button properties
-        resetButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.resetTimer, text = "",
-                                    image = resetIcon)
+        resetButton = ctk.CTkButton(buttonsFrame,
+                                    width = 30,
+                                    height = 30,
+                                    fg_color = DARKER_GRAY,
+                                    hover_color = DARK_GRAY,
+                                    text = "",
+                                    image = resetIcon,
+                                    command = self.resetTimer)
         
-        # Create and set switch time button properties
-        switchTimeButton = ctk.CTkButton(buttonsFrame, width = 1, fg_color = DARKER_GRAY, hover_color = DARK_GRAY, command = self.switchTimer, text = "",
-                                         image = switchTimeIcon)
+        switchTimeButton = ctk.CTkButton(buttonsFrame,
+                                         width = 30,
+                                         height = 30,
+                                         fg_color = DARKER_GRAY,
+                                         hover_color = DARK_GRAY,
+                                         text = "",
+                                         image = switchTimeIcon,
+                                         command = self.switchTimer)
 
-        # Print those widgets in the global container
+        # Print created widgets in the global container
         self.timeLabel.pack()
         buttonsFrame.pack()
         resetButton.pack(side = "left")
         switchTimeButton.pack(side = "left")
-        # Print container itself
+        # Print global container itself
         self.pack(side = "left")
 
     def triggerTimer(self):
@@ -312,8 +376,8 @@ class EatingTimer(ctk.CTkFrame):
 
 class Inbox(ctk.CTkFrame):
     def __init__(self, parent):
-        # Set component master
-        super().__init__(master = parent)
+        # Set container master and color
+        super().__init__(master = parent, fg_color = DARKER_GRAY)
 
         # Set placeholder
         self.entryValue = ctk.StringVar(value = "Enter task name")
@@ -341,28 +405,50 @@ class Inbox(ctk.CTkFrame):
         self.completeTask()
 
     def createWidgets(self):
-        # Create project container, name label and tasks counter
-        projectFrame = ctk.CTkFrame(self)
-        projectLabel = ctk.CTkLabel(projectFrame, text = "Inbox")
-        projectTasksNumber = ctk.CTkLabel(projectFrame, text = "", textvariable = self.tasksNumber)
-
-        # Create added tasks container for the first time
-        self.addedTasksFrame = ctk.CTkScrollableFrame(self)
-
-        # Create add task button container and button
-        self.addTaskFrame = ctk.CTkFrame(self)
-        self.addTaskButton = ctk.CTkButton(self.addTaskFrame, text = "+", height = 30, width = 30, command = self.openAddTaskWindow)
+        # Create project fonts
+        projectNameFont = ctk.CTkFont(family = FONT_FAMILY,
+                           size = PROJECT_NAME_SIZE)
         
-        # Print previous widgets in the global container
-        projectFrame.pack(fill = "x")
-        projectLabel.pack(side = "left")
-        projectTasksNumber.pack(side = "right")
+        projectTaskCounterFont = ctk.CTkFont(family = FONT_FAMILY,
+                                       size = PROJECT_TASK_COUNTER_SIZE)
 
-        self.addedTasksFrame.pack()
+        # Create project container, project name label, task counter label and add task button
+        projectFrame = ctk.CTkFrame(self,
+                                    fg_color = DARKER_GRAY)
+        
+        projectName = ctk.CTkLabel(projectFrame,
+                                    text = "Inbox",
+                                    text_color = WHITE,
+                                    font = projectNameFont)
+        
+        projectTaskCounter = ctk.CTkLabel(projectFrame,
+                                          text = "",
+                                          text_color = WHITE,
+                                          textvariable = self.tasksNumber,
+                                          font = projectTaskCounterFont)
 
-        self.addTaskFrame.pack(fill = "x")
-        self.addTaskButton.pack(side = "right")
+        addTaskButton = ctk.CTkButton(projectFrame,
+                                      width = 30,
+                                      height = 30,
+                                      fg_color = DARK_GRAY,
+                                      hover_color = LIGHT_GRAY,
+                                      text = "+",
+                                      text_color = WHITE,
+                                      font = projectNameFont,
+                                      command = self.openAddTaskWindow)
+        
+        # Create added tasks container for the first time
+        self.addedTasksFrame = ctk.CTkScrollableFrame(self,
+                                                      fg_color = DARK_GRAY,
+                                                      scrollbar_button_color = DARK_GRAY,
+                                                      scrollbar_button_hover_color = WHITE)
 
+        # Print created widgets in the global container
+        projectFrame.pack(fill = "x", padx = 10, pady = 10)
+        projectName.pack(side = "left")
+        projectTaskCounter.pack(side = "left", padx = 10)
+        addTaskButton.pack(side = "right")
+        self.addedTasksFrame.pack(padx = 10, pady = 10)
         # Print global container itself
         self.pack(fill = "x")
 
@@ -375,19 +461,14 @@ class Inbox(ctk.CTkFrame):
             # Reset checkboxes list when a task is marked as completed
             self.checkboxesStates = []
 
-            # Unprint added task frame and the rest below
             self.addedTasksFrame.pack_forget()
-            self.addTaskFrame.pack_forget()
 
-            # Create added task frame, add task button frame and button itself
-            self.addedTasksFrame = ctk.CTkScrollableFrame(self)
-            self.addTaskFrame = ctk.CTkFrame(self)
-            self.addTaskButton = ctk.CTkButton(self.addTaskFrame, text = "+", height = 30, width = 30, command = self.openAddTaskWindow)
+            self.addedTasksFrame = ctk.CTkScrollableFrame(self,
+                                                      fg_color = DARK_GRAY,
+                                                      scrollbar_button_color = DARK_GRAY,
+                                                      scrollbar_button_hover_color = WHITE)
             
-            # Print previously created widgets in the exact order
             self.addedTasksFrame.pack()
-            self.addTaskFrame.pack(fill = "x")
-            self.addTaskButton.pack(side = "right")
 
             # Get inbox rows number
             cursor.execute("SELECT COUNT (label) FROM inbox")
@@ -421,7 +502,10 @@ class Inbox(ctk.CTkFrame):
             
             # Go through every task and create its container, checkbox and label
             taskFrame = ctk.CTkFrame(self.addedTasksFrame)
-            taskInfo = ctk.CTkCheckBox(taskFrame, text = label[0], variable = self.checkboxesStates[a])
+
+            taskInfo = ctk.CTkCheckBox(taskFrame,
+                                       text = label[0],
+                                       variable = self.checkboxesStates[a])
 
             # Print previous widgets in the added tasks container
             taskFrame.pack(fill = "x")
@@ -532,21 +616,31 @@ class AddTaskWindow(ctk.CTkToplevel):
         self.createWidgets()
 
     def createWidgets(self):
-        # Create input frame, add task input and add description entry
+        # Create input container, add task entry and add description entry
         inputFrame = ctk.CTkFrame(self)
-        taskNameEntry = ctk.CTkEntry(inputFrame, textvariable = self.entryValue)
+
+        taskNameEntry = ctk.CTkEntry(inputFrame,
+                                     textvariable = self.entryValue)
+        
         taskDescriptionEntry = ctk.CTkEntry(inputFrame)
 
-        # Create add and cancel task button frame, add button and cancel button
+        # Create add and cancel task button container, add button and cancel button themselves
         actionButtonsFrame = ctk.CTkFrame(self)
-        cancelTaskButton = ctk.CTkButton(actionButtonsFrame, text = "Cancel", width = 1, command = self.cancelTask)
-        addTaskButton = ctk.CTkButton(actionButtonsFrame, text = "Add", width = 1, command = self.addTask)
+
+        cancelTaskButton = ctk.CTkButton(actionButtonsFrame,
+                                         text = "Cancel",
+                                         width = 1,
+                                         command = self.cancelTask)
+        
+        addTaskButton = ctk.CTkButton(actionButtonsFrame,
+                                      text = "Add",
+                                      width = 1,
+                                      command = self.addTask)
 
         # Print previously created widgets
         inputFrame.pack()
         taskNameEntry.pack()
         taskDescriptionEntry.pack()
-
         actionButtonsFrame.pack()
         cancelTaskButton.pack(side = "left")
         addTaskButton.pack(side = "left")
