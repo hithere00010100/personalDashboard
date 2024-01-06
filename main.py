@@ -47,7 +47,8 @@ class App():
                     self.bother,
                     self.window)
         
-        Inbox(self.window)
+        Inbox(self.window,
+              self.window)
 
         # Show reminder to start a timer
         self.bother()
@@ -375,9 +376,12 @@ class EatingTimer(ctk.CTkFrame):
         self.resetTimer()
 
 class Inbox(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, window):
         # Set container master and color
         super().__init__(master = parent, fg_color = DARKER_GRAY)
+
+        # Make available here all those external attributes and methods
+        self.window = window
 
         # Set placeholder
         self.entryValue = ctk.StringVar(value = "Enter task name")
@@ -454,6 +458,9 @@ class Inbox(ctk.CTkFrame):
         self.addedTasksFrame.pack(padx = 10, pady = 10)
         # Print global container itself
         self.pack(fill = "x")
+
+        # Create keyboard shortcuts
+        self.window.bind("<KeyPress-q>", lambda event: self.openAddTaskWindow())
 
     def restoreTasks(self):
         # Open database
@@ -576,7 +583,7 @@ class Inbox(ctk.CTkFrame):
                                    text_color = WHITE,
                                    text = label[0],
                                    font = self.taskNameFont,
-                                   variable = self.checkboxesStates[a])
+                                   variable = self.checkboxesStates[b])
 
         # Print previous widgets in the added tasks container
         taskFrame.pack(fill = "x")
@@ -631,7 +638,7 @@ class AddTaskWindow(ctk.CTkToplevel):
 
         # Set window title and size
         self.title("")
-        self.geometry("230x100")
+        self.geometry("230x100+1300+300")
         self.resizable(False, False)
 
         # Make external attributes and methods local
@@ -671,7 +678,11 @@ class AddTaskWindow(ctk.CTkToplevel):
         # Restore placeholder when task name entry losses focus
         taskNameEntry.bind("<FocusOut>", lambda event: self.restorePlaceholder())
 
-    def cancelTask(self):
+        # Create keyboard shortcuts
+        self.bind("<Return>", lambda event: self.addTask())
+        self.bind("<Escape>", lambda event: self.closeWindow())
+
+    def closeWindow(self):
         # Close add task window
         self.destroy()
 
