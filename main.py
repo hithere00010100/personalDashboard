@@ -5,13 +5,14 @@ from tkinter import messagebox
 from PIL import Image
 import sqlite3 as db
 
-class App(ctk.CTk):
+class App():
     def __init__(self):
+        self.window = ctk.CTk()
+
         # Set window title, size and position
-        super().__init__()
-        self.title("")
-        self.geometry("230x400+1600+100")
-        self.resizable(False, False)
+        self.window.title("")
+        self.window.geometry("230x400+1600+100")
+        self.window.resizable(False, False)
 
         # Set window dark mode and color accent
         ctk.set_appearance_mode("dark")
@@ -29,19 +30,19 @@ class App(ctk.CTk):
         connection.close()
 
         # Create timers container
-        timersFrame = ctk.CTkFrame(self)
+        timersFrame = ctk.CTkFrame(self.window)
         timersFrame.pack(fill = "x")
 
         # Print pomodoro timer, eating timer and inbox components in the global container
-        PomodoroTimer(timersFrame, self.isTimer1Running, self.isTimer2Running, self.bother, self.isBothering)
-        EatingTimer(timersFrame, self.isTimer2Running, self.isTimer1Running, self.bother)
-        Inbox(self)
+        PomodoroTimer(timersFrame, self.isTimer1Running, self.isTimer2Running, self.bother, self.isBothering, self.window)
+        EatingTimer(timersFrame, self.isTimer2Running, self.isTimer1Running, self.bother, self.window)
+        Inbox(self.window)
 
         # Show reminder to start a timer
         self.bother()
 
         # Execute the app
-        self.mainloop()
+        self.window.mainloop()
 
     def bother(self):
         if self.isTimer1Running.get() == False and self.isTimer2Running.get() == False:
@@ -49,21 +50,21 @@ class App(ctk.CTk):
             self.isBothering.set(value = True)
 
             # Show windows and pin it on the screen
-            self.state(newstate = "normal")
-            self.attributes("-topmost", True)
+            self.window.state(newstate = "normal")
+            self.window.attributes("-topmost", True)
             # Show the start a timer reminder and unpin window when alert is closed
             messagebox.showerror(message = "Start a timer", type = "ok")
-            self.attributes("-topmost", False)
+            self.window.attributes("-topmost", False)
             
             # Show that reminder every minute
-            self.after(60000, self.bother)
+            self.window.after(60000, self.bother)
 
         else:
             # Tell pomodoro timer that is okay to show an alert because there is no active alert right now
             self.isBothering.set(value = False)
 
 class PomodoroTimer(ctk.CTkFrame):
-    def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering):
+    def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering, window):
         # Set pomodoro timer master and container color
         super().__init__(master = parent, fg_color = DARKER_GRAY)
 
@@ -72,6 +73,7 @@ class PomodoroTimer(ctk.CTkFrame):
         self.isTimer2Running = isTimer2Running
         self.bother = bother
         self.isBothering = isBothering
+        self.window = window
         
         # Set initial conditions
         self.isFirstTimeRunning = True
@@ -81,6 +83,11 @@ class PomodoroTimer(ctk.CTkFrame):
         # Create widgets and set timer to focus time
         self.createWidgets()
         self.resetTimer()
+
+        # Create keyboard shortcuts
+        self.window.bind("<KeyPress-1>", lambda event: self.triggerTimer())
+        self.window.bind("<KeyPress-r>", lambda event: self.resetTimer())
+        self.window.bind("<KeyPress-s>", lambda event: self. skipTimer())
 
     def createWidgets(self):
         # Set font
@@ -183,7 +190,7 @@ class PomodoroTimer(ctk.CTkFrame):
             self.skip = True
 
 class EatingTimer(ctk.CTkFrame):
-    def __init__(self, parent, isTimer2Running, isTimer1Running, bother):
+    def __init__(self, parent, isTimer2Running, isTimer1Running, bother, window):
         # Set eating timer master, container color and font
         super().__init__(master = parent, fg_color = DARKER_GRAY)
 
@@ -191,6 +198,7 @@ class EatingTimer(ctk.CTkFrame):
         self.isTimerRunning = isTimer2Running
         self.isTimer1Running = isTimer1Running
         self.bother = bother
+        self.window = window
 
         # Set initial conditions
         self.isFirstTimeRunning = True
@@ -199,6 +207,11 @@ class EatingTimer(ctk.CTkFrame):
         # Create widgets and set timer to lunch time
         self.createWidgets()
         self.resetTimer()
+
+        # Create keyboard shortcuts
+        self.window.bind("<KeyPress-2>", lambda event: self.triggerTimer())
+        self.window.bind("<KeyPress-r>", lambda event: self.resetTimer())
+        self.window.bind("<KeyPress-s>", lambda event: self. switchTimer())
 
     def createWidgets(self):
         # Set font
