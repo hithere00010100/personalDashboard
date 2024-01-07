@@ -538,6 +538,9 @@ class Inbox(ctk.CTkFrame):
 
         # Close database
         connection.close()
+
+        # Update project tasks counter
+        self.updateTaskCounter()
         
         # Make available update tasks when a task is deleted
         self.isFirstTime = False
@@ -594,6 +597,9 @@ class Inbox(ctk.CTkFrame):
         # Clear added task name
         AddTaskWindow.clearPlaceholder(self)
 
+        # Update project tasks counter
+        self.updateTaskCounter()
+
     def openAddTaskWindow(self):
         # Open add task window
         AddTaskWindow(self.entryValue, self.addTask)
@@ -607,9 +613,6 @@ class Inbox(ctk.CTkFrame):
         cursor.execute("SELECT COUNT (label) FROM inbox")
         # Use rows number as an index
         tasksNumber = cursor.fetchone()[0]
-
-        # Update tasks counter project label
-        self.tasksNumber.set(value = tasksNumber)
 
         for a in range(tasksNumber):
             if self.checkboxesStates[a].get() == "1":
@@ -630,6 +633,18 @@ class Inbox(ctk.CTkFrame):
 
         # Close database
         connection.close()
+
+    def updateTaskCounter(self):
+        # Open database
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
+
+        # Get inbox task number
+        cursor.execute("SELECT COUNT (label) FROM inbox")
+        tasksNumber = cursor.fetchone()[0]
+
+        # Update project tasks counter
+        self.tasksNumber.set(value = tasksNumber)
 
 class AddTaskWindow(ctk.CTkToplevel):
     def __init__(self, entryValue, addTask):
