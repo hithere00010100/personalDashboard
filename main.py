@@ -9,8 +9,9 @@ class App():
     def __init__(self):
         self.window = ctk.CTk(fg_color = DARKER_GRAY)
 
-        # Set window title, size and position
+        # Set window title, icon, size and position
         self.window.title("")
+        self.window.iconbitmap("images/icon.ico")
         self.window.geometry("230x400+1600+100")
         self.window.resizable(False, False)
 
