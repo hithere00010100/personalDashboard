@@ -674,10 +674,10 @@ class AddTaskWindow(ctk.CTkToplevel):
         taskNameEntry.pack(pady = (10, 5))
         taskDescriptionEntry.pack(pady = (5, 10))
 
+        # Set placeholder everytime the window is open
+        self.entryValue.set("Enter task name")
         # Clear placeholder when task name entry is focus
         taskNameEntry.bind("<FocusIn>", lambda event: self.clearPlaceholder())
-        # Restore placeholder when task name entry losses focus
-        taskNameEntry.bind("<FocusOut>", lambda event: self.restorePlaceholder())
 
         # Create keyboard shortcuts
         self.bind("<Return>", lambda event: self.addTask())
