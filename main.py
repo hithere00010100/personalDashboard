@@ -404,10 +404,9 @@ class Inbox(ctk.CTkFrame):
         # Close database
         connection.close()
         
-        # Create and print widgets, restore previously added tasks when relaunching the app and start watching checkboxes states changes
+        # Create and print widgets, restore previously added tasks when relaunching the app
         self.createWidgets()
         self.restoreTasks()
-        self.completeTask()
 
     def createWidgets(self):
         # Create fonts
@@ -527,7 +526,8 @@ class Inbox(ctk.CTkFrame):
                                        text_color = WHITE,
                                        text = label[0],
                                        font = self.taskNameFont,
-                                       variable = self.checkboxesStates[a])
+                                       variable = self.checkboxesStates[a],
+                                       command = self.completeTask)
 
             # Print previous widgets in the added tasks container
             taskFrame.pack(fill = "x")
@@ -584,7 +584,8 @@ class Inbox(ctk.CTkFrame):
                                    text_color = WHITE,
                                    text = label[0],
                                    font = self.taskNameFont,
-                                   variable = self.checkboxesStates[b])
+                                   variable = self.checkboxesStates[b],
+                                   command = self.completeTask)
 
         # Print previous widgets in the added tasks container
         taskFrame.pack(fill = "x")
@@ -629,9 +630,6 @@ class Inbox(ctk.CTkFrame):
 
         # Close database
         connection.close()
-
-        # Keep on checking checked tasks every half second
-        self.after(500, self.completeTask)
 
 class AddTaskWindow(ctk.CTkToplevel):
     def __init__(self, entryValue, addTask):
