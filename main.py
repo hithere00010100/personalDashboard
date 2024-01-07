@@ -5,15 +5,15 @@ from tkinter import messagebox
 from PIL import Image
 import sqlite3 as db
 
-class App():
+class App(ctk.CTk):
     def __init__(self):
-        self.window = ctk.CTk(fg_color = DARKER_GRAY)
+        super().__init__(fg_color = DARKER_GRAY)
 
         # Set window title, icon, size and position
-        self.window.title("")
-        self.window.iconbitmap("images/icon.ico")
-        self.window.geometry("230x400+1600+100")
-        self.window.resizable(False, False)
+        self.title("")
+        self.iconbitmap("images/icon.ico")
+        self.geometry("230x400+1600+100")
+        self.resizable(False, False)
 
         # Set window dark mode and color accent
         ctk.set_appearance_mode("dark")
@@ -32,30 +32,30 @@ class App():
         connection.close()
 
         # Print pomodoro timer, eating timer and inbox components in the global container
-        timersFrame = TimersContainer(self.window)
+        timersFrame = TimersContainer(self)
         
         PomodoroTimer(timersFrame,
                       self.isTimer1Running,
                       self.isTimer2Running,
                       self.bother,
                       self.isBothering,
-                      self.window,
+                      self,
                       self.afterId)
         
         EatingTimer(timersFrame,
                     self.isTimer2Running,
                     self.isTimer1Running,
                     self.bother,
-                    self.window)
+                    self)
         
-        Inbox(self.window,
-              self.window)
+        Inbox(self,
+              self)
 
         # Show reminder to start a timer
         self.bother()
 
         # Execute the app
-        self.window.mainloop()
+        self.mainloop()
 
     def bother(self):
         if self.isTimer1Running.get() == False and self.isTimer2Running.get() == False:
@@ -63,14 +63,14 @@ class App():
             self.isBothering.set(value = True)
 
             # Show windows and pin it on the screen
-            self.window.state(newstate = "normal")
-            self.window.attributes("-topmost", True)
+            self.state(newstate = "normal")
+            self.attributes("-topmost", True)
             # Show the start a timer reminder and unpin window when alert is closed
             messagebox.showerror(message = "Start a timer", type = "ok")
-            self.window.attributes("-topmost", False)
+            self.attributes("-topmost", False)
             
             # Show that reminder every minute and store its cancel id to stop it later
-            identifier = self.window.after(60000, self.bother)
+            identifier = self.after(60000, self.bother)
             self.afterId.set(value = identifier)
 
         else:
