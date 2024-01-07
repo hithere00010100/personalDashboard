@@ -641,6 +641,8 @@ class AddTaskWindow(ctk.CTkToplevel):
         self.title("")
         self.geometry("230x100+1300+300")
         self.resizable(False, False)
+        # Focus this window
+        self.grab_set()
 
         # Make external attributes and methods local
         self.entryValue = entryValue
