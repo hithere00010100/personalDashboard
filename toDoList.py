@@ -141,7 +141,7 @@ class Inbox(ctk.CTkFrame):
             
             # Go through every added task and create its container and checkbox
             taskFrame = ctk.CTkFrame(self.addedTasksFrame,
-                                     fg_color = DARK_GRAY)
+                                     fg_color = DARKER_GRAY)
 
             taskCheckbox = ctk.CTkCheckBox(taskFrame,
                                            width = 0,
@@ -151,7 +151,7 @@ class Inbox(ctk.CTkFrame):
                                            fg_color = DARKER_GRAY,
                                            border_color = WHITE,
                                            hover_color = LIGHT_GRAY,
-                                           text = "",
+                                           text = None,
                                            variable = self.checkboxesStates[a],
                                            command = self.completeTask)
             
@@ -168,6 +168,7 @@ class Inbox(ctk.CTkFrame):
             self.taskTextbox = ctk.CTkTextbox(taskFrame,
                                               height = self.textboxHeight,
                                               wrap = "word",
+                                              activate_scrollbars = False,
                                               fg_color = DARKER_GRAY,
                                               text_color = WHITE,
                                               font = self.taskNameFont)
@@ -180,9 +181,9 @@ class Inbox(ctk.CTkFrame):
             self.taskTextbox.bind("<Leave>", lambda event: self.collapseTaskTextbox(event))
 
             # Print previous widgets in the added tasks container
-            taskFrame.pack(fill = "x")
-            taskCheckbox.pack(side = "left")
-            self.taskTextbox.pack(side = "left")
+            taskFrame.pack(fill = "x", padx = (0, 2), pady = (0, 2))
+            taskCheckbox.pack(side = "left", padx = (5, 0))
+            self.taskTextbox.pack(side = "left", pady = 5, padx = (0, 5))
 
             # Go to the next checkboxes list item
             a += 1
@@ -226,7 +227,7 @@ class Inbox(ctk.CTkFrame):
         
         # Create added task container and checkbox
         taskFrame = ctk.CTkFrame(self.addedTasksFrame,
-                                 fg_color = DARK_GRAY)
+                                 fg_color = DARKER_GRAY)
 
         taskCheckbox = ctk.CTkCheckBox(taskFrame,
                                        width = 0,
@@ -236,7 +237,7 @@ class Inbox(ctk.CTkFrame):
                                        fg_color = DARKER_GRAY,
                                        border_color = WHITE,
                                        hover_color = LIGHT_GRAY,
-                                       text = "",
+                                       text = None,
                                        variable = self.checkboxesStates[b],
                                        command = self.completeTask)
         
@@ -253,6 +254,7 @@ class Inbox(ctk.CTkFrame):
         self.taskTextbox = ctk.CTkTextbox(taskFrame,
                                           height = self.textboxHeight,
                                           wrap = "word",
+                                          activate_scrollbars = False,
                                           fg_color = DARKER_GRAY,
                                           text_color = WHITE,
                                           font = self.taskNameFont)
@@ -265,9 +267,9 @@ class Inbox(ctk.CTkFrame):
         self.taskTextbox.bind("<Leave>", lambda event: self.collapseTaskTextbox(event))
 
         # Print previous widgets in the added tasks container
-        taskFrame.pack(fill = "x")
-        taskCheckbox.pack(side = "left")
-        self.taskTextbox.pack(side = "left")
+        taskFrame.pack(fill = "x", padx = (0, 2), pady = (0, 2))
+        taskCheckbox.pack(side = "left", padx = (5, 0))
+        self.taskTextbox.pack(side = "left", pady = 5, padx = (0, 5))
 
         # Clear added task name
         AddTaskWindow.clearPlaceholder(self)
