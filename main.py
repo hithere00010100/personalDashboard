@@ -460,7 +460,7 @@ class Inbox(ctk.CTkFrame):
         self.pack(fill = "x")
 
         # Create keyboard shortcuts
-        self.window.bind("<KeyPress-q>", lambda event: self.openAddTaskWindow())
+        self.window.bind("<Alt-KeyPress-q>", lambda event: self.openAddTaskWindow())
 
     def restoreTasks(self):
         # Open database
@@ -503,36 +503,60 @@ class Inbox(ctk.CTkFrame):
 
         # With the database open, get all the tasks labels
         cursor.execute("SELECT label FROM inbox")
-        tasksLabels = cursor.fetchall()
+        taskNames = cursor.fetchall()
 
         a = 0
 
-        for label in tasksLabels:
+        for taskName in taskNames:
             # Append something to checkboxes list and then replace that item to a checkbox variable
             self.checkboxesStates.append("X")
             self.checkboxesStates[a] = ctk.StringVar()
             
-            # Go through every added task and create its container, checkbox and name
+            # Go through every added task and create its container and checkbox
             taskFrame = ctk.CTkFrame(self.addedTasksFrame,
                                      fg_color = DARK_GRAY)
 
-            taskInfo = ctk.CTkCheckBox(taskFrame,
-                                       checkbox_width = 20,
-                                       checkbox_height = 20,
-                                       border_width = 1,
-                                       fg_color = DARKER_GRAY,
-                                       border_color = WHITE,
-                                       hover_color = LIGHT_GRAY,
-                                       text_color = WHITE,
-                                       text = label[0],
-                                       font = self.taskNameFont,
-                                       variable = self.checkboxesStates[a],
-                                       command = self.completeTask)
+            taskCheckbox = ctk.CTkCheckBox(taskFrame,
+                                           width = 0,
+                                           checkbox_width = 20,
+                                           checkbox_height = 20,
+                                           border_width = 1,
+                                           fg_color = DARKER_GRAY,
+                                           border_color = WHITE,
+                                           hover_color = LIGHT_GRAY,
+                                           text = "",
+                                           variable = self.checkboxesStates[a],
+                                           command = self.completeTask)
+            
+            # Set a different textbox height based on task name length
+            self.taskNameCharsNumber = len(taskName)
+
+            if self.taskNameCharsNumber <= 18:
+                self.textboxHeight = 25
+            
+            else:
+                self.textboxHeight = 50
+
+            # Create task name textbox
+            self.taskTextbox = ctk.CTkTextbox(taskFrame,
+                                              height = self.textboxHeight,
+                                              wrap = "word",
+                                              fg_color = DARKER_GRAY,
+                                              text_color = WHITE,
+                                              font = self.taskNameFont)
+            
+            # Add task name as the textbox default value
+            self.taskTextbox.insert(1.0, taskName[0])
+
+            # Create bindings to expand and collapse textbox on hover and off hover
+            self.taskTextbox.bind("<Enter>", lambda event: self.expandTaskTextbox(event))
+            self.taskTextbox.bind("<Leave>", lambda event: self.collapseTaskTextbox(event))
 
             # Print previous widgets in the added tasks container
             taskFrame.pack(fill = "x")
-            taskInfo.pack(side = "left")
-            
+            taskCheckbox.pack(side = "left")
+            self.taskTextbox.pack(side = "left")
+
             # Go to the next checkboxes list item
             a += 1
 
@@ -568,31 +592,55 @@ class Inbox(ctk.CTkFrame):
 
         # Get the task label from the database
         cursor.execute("SELECT label FROM inbox WHERE id = ?", (a,))
-        label = cursor.fetchone()
+        taskName = cursor.fetchone()
         
         # Close database
         connection.close()
         
-        # Create added task container, checkbox and name
+        # Create added task container and checkbox
         taskFrame = ctk.CTkFrame(self.addedTasksFrame,
                                  fg_color = DARK_GRAY)
 
-        taskInfo = ctk.CTkCheckBox(taskFrame,
-                                   checkbox_width = 20,
-                                   checkbox_height = 20,
-                                   border_width = 1,
-                                   fg_color = DARKER_GRAY,
-                                   border_color = WHITE,
-                                   hover_color = LIGHT_GRAY,
-                                   text_color = WHITE,
-                                   text = label[0],
-                                   font = self.taskNameFont,
-                                   variable = self.checkboxesStates[b],
-                                   command = self.completeTask)
+        taskCheckbox = ctk.CTkCheckBox(taskFrame,
+                                       width = 0,
+                                       checkbox_width = 20,
+                                       checkbox_height = 20,
+                                       border_width = 1,
+                                       fg_color = DARKER_GRAY,
+                                       border_color = WHITE,
+                                       hover_color = LIGHT_GRAY,
+                                       text = "",
+                                       variable = self.checkboxesStates[b],
+                                       command = self.completeTask)
+        
+        # Set a different textbox height based on task name length
+        self.taskNameCharsNumber = len(taskName[0])
+
+        if self.taskNameCharsNumber <= 18:
+            self.textboxHeight = 25
+        
+        else:
+            self.textboxHeight = 50
+
+        # Create task name textbox
+        self.taskTextbox = ctk.CTkTextbox(taskFrame,
+                                          height = self.textboxHeight,
+                                          wrap = "word",
+                                          fg_color = DARKER_GRAY,
+                                          text_color = WHITE,
+                                          font = self.taskNameFont)
+        
+        # Add task name as the textbox default value
+        self.taskTextbox.insert(1.0, taskName[0])
+
+        # Create bindings to expand and collapse textbox on hover and off hover
+        self.taskTextbox.bind("<Enter>", lambda event: self.expandTaskTextbox(event))
+        self.taskTextbox.bind("<Leave>", lambda event: self.collapseTaskTextbox(event))
 
         # Print previous widgets in the added tasks container
         taskFrame.pack(fill = "x")
-        taskInfo.pack(side = "left")
+        taskCheckbox.pack(side = "left")
+        self.taskTextbox.pack(side = "left")
 
         # Clear added task name
         AddTaskWindow.clearPlaceholder(self)
@@ -645,6 +693,14 @@ class Inbox(ctk.CTkFrame):
 
         # Update project tasks counter
         self.tasksNumber.set(value = tasksNumber)
+
+    def expandTaskTextbox(self, event):
+        # Set textbox height to 3
+        event.widget.configure(height = 3)
+
+    def collapseTaskTextbox(self, event):
+        # Go back to the previous textbox height
+        event.widget.configure(height = 1)
 
 class AddTaskWindow(ctk.CTkToplevel):
     def __init__(self, entryValue, addTask):
