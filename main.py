@@ -52,12 +52,14 @@ class App(ctk.CTk):
         
         Project(self,
                 "Inbox",
+                1,
                 self)
         
         ProjectManagementBar(self)
 
         Project(self,
                 "Due",
+                2,
                 self)
         
         # Show reminder to start a timer

@@ -4,12 +4,13 @@ import tkinter as tk
 import sqlite3 as db
 
 class Project(ctk.CTkFrame):
-    def __init__(self, parent, projectName, window):
+    def __init__(self, parent, projectName, shortcut, window):
         # Set container master and color
         super().__init__(master = parent, fg_color = DARKER_GRAY)
 
         # Make available here all those external attributes, methods and parameters
         self.projectName = projectName
+        self.hotkey = shortcut
         self.window = window
 
         # Set placeholder
@@ -87,8 +88,8 @@ class Project(ctk.CTkFrame):
         # Print global container itself
         self.pack(fill = "x")
 
-        # Create keyboard shortcuts
-        self.window.bind("<Alt-KeyPress-q>", lambda event: self.openAddTaskWindow())
+        # Create keyboard shortcuts based on user definition
+        self.window.bind(f"<Alt-KeyPress-{self.hotkey}>", lambda event: self.openAddTaskWindow())
 
     def restoreTasks(self):
         # Open database
