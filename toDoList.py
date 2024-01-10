@@ -6,7 +6,7 @@ import sqlite3 as db
 class Project(ctk.CTkFrame):
     def __init__(self, parent, projectName, shortcut, window):
         # Set container master and color
-        super().__init__(master = parent, fg_color = DARKER_GRAY)
+        super().__init__(master = parent, fg_color = BLACK)
 
         # Make available here all those external attributes, methods and parameters
         self.projectName = projectName
@@ -40,17 +40,17 @@ class Project(ctk.CTkFrame):
     def createWidgets(self):
         # Create fonts
         projectNameFont = ctk.CTkFont(family = FONT_FAMILY,
-                           size = PROJECT_NAME_SIZE)
+                           size = M)
         
         projectTaskCounterFont = ctk.CTkFont(family = FONT_FAMILY,
-                                       size = PROJECT_TASK_COUNTER_SIZE)
+                                       size = XS)
         
         self.taskNameFont = ctk.CTkFont(family = FONT_FAMILY,
-                                        size = TASK_NAME_SIZE)
+                                        size = S)
 
         # Create project container, project name label, task counter label and add task button
         projectFrame = ctk.CTkFrame(self,
-                                    fg_color = DARKER_GRAY)
+                                    fg_color = BLACK)
         
         projectName = ctk.CTkLabel(projectFrame,
                                     text = self.projectName,
@@ -143,14 +143,14 @@ class Project(ctk.CTkFrame):
             
             # Go through every added task and create its container and checkbox
             taskFrame = ctk.CTkFrame(self.addedTasksFrame,
-                                     fg_color = DARKER_GRAY)
+                                     fg_color = BLACK)
 
             taskCheckbox = ctk.CTkCheckBox(taskFrame,
                                            width = 0,
                                            checkbox_width = 20,
                                            checkbox_height = 20,
                                            border_width = 1,
-                                           fg_color = DARKER_GRAY,
+                                           fg_color = BLACK,
                                            border_color = WHITE,
                                            hover_color = LIGHT_GRAY,
                                            text = None,
@@ -171,7 +171,7 @@ class Project(ctk.CTkFrame):
                                               height = self.textboxHeight,
                                               wrap = "word",
                                               activate_scrollbars = False,
-                                              fg_color = DARKER_GRAY,
+                                              fg_color = BLACK,
                                               text_color = WHITE,
                                               font = self.taskNameFont)
             
@@ -229,14 +229,14 @@ class Project(ctk.CTkFrame):
         
         # Create added task container and checkbox
         taskFrame = ctk.CTkFrame(self.addedTasksFrame,
-                                 fg_color = DARKER_GRAY)
+                                 fg_color = BLACK)
 
         taskCheckbox = ctk.CTkCheckBox(taskFrame,
                                        width = 0,
                                        checkbox_width = 20,
                                        checkbox_height = 20,
                                        border_width = 1,
-                                       fg_color = DARKER_GRAY,
+                                       fg_color = BLACK,
                                        border_color = WHITE,
                                        hover_color = LIGHT_GRAY,
                                        text = None,
@@ -257,7 +257,7 @@ class Project(ctk.CTkFrame):
                                           height = self.textboxHeight,
                                           wrap = "word",
                                           activate_scrollbars = False,
-                                          fg_color = DARKER_GRAY,
+                                          fg_color = BLACK,
                                           text_color = WHITE,
                                           font = self.taskNameFont)
         
@@ -335,7 +335,7 @@ class Project(ctk.CTkFrame):
 
 class AddTaskWindow(ctk.CTkToplevel):
     def __init__(self, entryValue, addTask):
-        super().__init__(fg_color = DARKER_GRAY)
+        super().__init__(fg_color = BLACK)
 
         # Set window title and size
         self.title("")
@@ -354,11 +354,11 @@ class AddTaskWindow(ctk.CTkToplevel):
     def createWidgets(self):
         # Create font
         entriesFont = ctk.CTkFont(family = FONT_FAMILY,
-                                       size = TASK_NAME_SIZE)
+                                       size = S)
 
         # Create entries container, add task entry and add description entry
         inputFrame = ctk.CTkFrame(self,
-                                  fg_color = DARKER_GRAY)
+                                  fg_color = BLACK)
 
         taskNameEntry = ctk.CTkEntry(inputFrame,
                                      text_color = WHITE,
@@ -398,7 +398,7 @@ class AddTaskWindow(ctk.CTkToplevel):
 class ProjectManagementBar(ctk.CTkFrame):
     def __init__(self, parent, window):
         # Set project management container master and color
-        super().__init__(master = parent, fg_color = DARKER_GRAY)
+        super().__init__(master = parent, fg_color = BLACK)
 
         # Bring the app general container here
         self.window = window
@@ -413,7 +413,7 @@ class ProjectManagementBar(ctk.CTkFrame):
     def createWidgets(self):
         # Create font
         font = ctk.CTkFont(family = FONT_FAMILY,
-                           size = PROJECT_NAME_SIZE)
+                           size = M)
         
         # Create set project name entry, add button and delete button
         setProjectNameEntry = ctk.CTkEntry(self,
@@ -513,7 +513,7 @@ class ProjectManagementBar(ctk.CTkFrame):
 class deleteProjectWindow(ctk.CTkToplevel):
     def __init__(self):
         # Set window color, size and position
-        super().__init__(fg_color = DARKER_GRAY)
+        super().__init__(fg_color = BLACK)
         self.geometry("230x100+1300+500")
 
         # Create variable to store project to delete name

@@ -8,7 +8,7 @@ import sqlite3 as db
 
 class App(ctk.CTk):
     def __init__(self):
-        super().__init__(fg_color = DARKER_GRAY)
+        super().__init__(fg_color = BLACK)
 
         # Set window title, icon, size and position
         self.title("")
@@ -93,7 +93,7 @@ class TimersContainer(ctk.CTkFrame):
     def __init__(self, parent):
         # Set container master and color
         super().__init__(master = parent,
-                         fg_color = DARKER_GRAY)
+                         fg_color = BLACK)
         
         # Print container itself
         self.pack(fill = "x")
@@ -101,7 +101,7 @@ class TimersContainer(ctk.CTkFrame):
 class PomodoroTimer(ctk.CTkFrame):
     def __init__(self, parent, isTimer1Running, isTimer2Running, bother, isBothering, window, afterId):
         # Set pomodoro timer master and container color
-        super().__init__(master = parent, fg_color = DARKER_GRAY)
+        super().__init__(master = parent, fg_color = BLACK)
 
         # Make available here those external variables and methods
         self.isTimerRunning = isTimer1Running
@@ -123,7 +123,7 @@ class PomodoroTimer(ctk.CTkFrame):
     def createWidgets(self):
         # Create font
         timerFont = ctk.CTkFont(family = FONT_FAMILY,
-                           size = TIMER_LABEL_SIZE,
+                           size = XL,
                            weight = "bold")
 
         # Create icons for reset and skip buttons
@@ -145,12 +145,12 @@ class PomodoroTimer(ctk.CTkFrame):
         
         # Create buttons container, reset button and skip button
         buttonsFrame = ctk.CTkFrame(self,
-                                    fg_color = DARKER_GRAY)
+                                    fg_color = BLACK)
 
         resetButton = ctk.CTkButton(buttonsFrame,
                                     width = 30,
                                     height = 30,
-                                    fg_color = DARKER_GRAY,
+                                    fg_color = BLACK,
                                     hover_color = DARK_GRAY,
                                     text = "",
                                     image = resetIcon,
@@ -159,7 +159,7 @@ class PomodoroTimer(ctk.CTkFrame):
         skipButton = ctk.CTkButton(buttonsFrame,
                                    width = 30,
                                    height = 30,
-                                   fg_color = DARKER_GRAY,
+                                   fg_color = BLACK,
                                    hover_color = DARK_GRAY,
                                    text = "",
                                    image = self.skipIcon,
@@ -256,7 +256,7 @@ class PomodoroTimer(ctk.CTkFrame):
 class EatingTimer(ctk.CTkFrame):
     def __init__(self, parent, isTimer2Running, isTimer1Running, bother, window):
         # Set eating timer master, container color and font
-        super().__init__(master = parent, fg_color = DARKER_GRAY)
+        super().__init__(master = parent, fg_color = BLACK)
 
         # Make available here those external variables and methods
         self.isTimerRunning = isTimer2Running
@@ -275,7 +275,7 @@ class EatingTimer(ctk.CTkFrame):
     def createWidgets(self):
         # Create font
         timerFont = ctk.CTkFont(family = FONT_FAMILY,
-                           size = TIMER_LABEL_SIZE,
+                           size = XL,
                            weight = "bold")
 
         # Create icons for reset and switch time buttons
@@ -297,12 +297,12 @@ class EatingTimer(ctk.CTkFrame):
         
         # Create buttons container, reset button and switch time button
         buttonsFrame = ctk.CTkFrame(self,
-                                    fg_color = DARKER_GRAY)
+                                    fg_color = BLACK)
         
         resetButton = ctk.CTkButton(buttonsFrame,
                                     width = 30,
                                     height = 30,
-                                    fg_color = DARKER_GRAY,
+                                    fg_color = BLACK,
                                     hover_color = DARK_GRAY,
                                     text = "",
                                     image = resetIcon,
@@ -311,7 +311,7 @@ class EatingTimer(ctk.CTkFrame):
         switchTimeButton = ctk.CTkButton(buttonsFrame,
                                          width = 30,
                                          height = 30,
-                                         fg_color = DARKER_GRAY,
+                                         fg_color = BLACK,
                                          hover_color = DARK_GRAY,
                                          text = "",
                                          image = switchTimeIcon,
