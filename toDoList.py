@@ -3,12 +3,13 @@ import customtkinter as ctk
 import tkinter as tk
 import sqlite3 as db
 
-class Inbox(ctk.CTkFrame):
-    def __init__(self, parent, window):
+class Project(ctk.CTkFrame):
+    def __init__(self, parent, projectName, window):
         # Set container master and color
         super().__init__(master = parent, fg_color = DARKER_GRAY)
 
-        # Make available here all those external attributes and methods
+        # Make available here all those external attributes, methods and parameters
+        self.projectName = projectName
         self.window = window
 
         # Set placeholder
@@ -24,9 +25,9 @@ class Inbox(ctk.CTkFrame):
         # Open database
         connection = db.connect("tasks.db")
 
-        # Create inbox tasks table (with row id and task label columns) in the database
+        # Create project tasks table (with task id and task name columns) in the database
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS inbox (id INTEGER, label TEXT)")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.projectName} (id INTEGER, name TEXT)")
 
         # Close database
         connection.close()
@@ -51,7 +52,7 @@ class Inbox(ctk.CTkFrame):
                                     fg_color = DARKER_GRAY)
         
         projectName = ctk.CTkLabel(projectFrame,
-                                    text = "Inbox",
+                                    text = self.projectName,
                                     text_color = WHITE,
                                     font = projectNameFont)
         
@@ -109,8 +110,8 @@ class Inbox(ctk.CTkFrame):
             
             self.addedTasksFrame.pack(padx = 10, pady = 10)
 
-            # Get inbox rows number
-            cursor.execute("SELECT COUNT (label) FROM inbox")
+            # Get project table rows number
+            cursor.execute(f"SELECT COUNT (name) FROM {self.projectName}")
             # Use rows number as an index
             tasksNumber = cursor.fetchone()[0]
 
@@ -118,8 +119,8 @@ class Inbox(ctk.CTkFrame):
             c = self.checkedTaskIndex + 1
 
             for a in range(tasksNumber):
-                # Use deleted task index on other remaining tasks
-                cursor.execute("UPDATE inbox SET id = ? WHERE id = ?", (b, c,))
+                # Set deleted task index on other remaining tasks
+                cursor.execute(f"UPDATE {self.projectName} SET id = ? WHERE id = ?", (b, c,))
                 
                 # Go to the next task to set its new index
                 c += 1
@@ -128,8 +129,8 @@ class Inbox(ctk.CTkFrame):
             # Save modified database
             connection.commit()
 
-        # With the database open, get all the tasks labels
-        cursor.execute("SELECT label FROM inbox")
+        # With the database open, get all the tasks names
+        cursor.execute(f"SELECT name FROM {self.projectName}")
         taskNames = cursor.fetchall()
 
         a = 0
@@ -202,15 +203,15 @@ class Inbox(ctk.CTkFrame):
         connection = db.connect("tasks.db")
         cursor = connection.cursor()
 
-        # Get inbox rows number
-        cursor.execute("SELECT COUNT (label) FROM inbox")
+        # Get project table rows number
+        cursor.execute(f"SELECT COUNT (name) FROM {self.projectName}")
         # Use rows number as an index
         tasksNumber = cursor.fetchone()[0]
         a = tasksNumber + 1
         b = tasksNumber
 
         # Append entry field text as a new task in the database with an identifier
-        cursor.execute("INSERT INTO inbox (id, label) VALUES (?, ?)", (a, self.entryValue.get(),))
+        cursor.execute(f"INSERT INTO {self.projectName} (id, name) VALUES (?, ?)", (a, self.entryValue.get(),))
         # Save modified database
         connection.commit()
 
@@ -218,8 +219,8 @@ class Inbox(ctk.CTkFrame):
         self.checkboxesStates.append("X")
         self.checkboxesStates[b] = ctk.StringVar()
 
-        # Get the task label from the database
-        cursor.execute("SELECT label FROM inbox WHERE id = ?", (a,))
+        # Get the task name from the database
+        cursor.execute(f"SELECT name FROM {self.projectName} WHERE id = ?", (a,))
         taskName = cursor.fetchone()
         
         # Close database
@@ -286,8 +287,8 @@ class Inbox(ctk.CTkFrame):
         connection = db.connect("tasks.db")
         cursor = connection.cursor()
 
-        # Get inbox rows number
-        cursor.execute("SELECT COUNT (label) FROM inbox")
+        # Get project table rows number
+        cursor.execute(f"SELECT COUNT (name) FROM {self.projectName}")
         # Use rows number as an index
         tasksNumber = cursor.fetchone()[0]
 
@@ -298,8 +299,8 @@ class Inbox(ctk.CTkFrame):
                 # Capture checked task id
                 self.checkedTaskIndex = b
 
-                # Check every checkbox variable and delete the one that is checked
-                cursor.execute("DELETE FROM inbox WHERE id = ?", (b,))
+                # Go through every checkbox variable and delete the one that is checked
+                cursor.execute(f"DELETE FROM {self.projectName} WHERE id = ?", (b,))
                 # Save modified database
                 connection.commit()
 
@@ -316,8 +317,8 @@ class Inbox(ctk.CTkFrame):
         connection = db.connect("tasks.db")
         cursor = connection.cursor()
 
-        # Get inbox task number
-        cursor.execute("SELECT COUNT (label) FROM inbox")
+        # Get project table task number
+        cursor.execute(f"SELECT COUNT (name) FROM {self.projectName}")
         tasksNumber = cursor.fetchone()[0]
 
         # Update project tasks counter
@@ -392,3 +393,52 @@ class AddTaskWindow(ctk.CTkToplevel):
 
     def restorePlaceholder(self):
         self.entryValue.set("Enter task name")
+
+class ProjectManagementBar(ctk.CTkFrame):
+    def __init__(self, parent):
+        # Set project management container master and color
+        super().__init__(master = parent, fg_color = DARKER_GRAY)
+
+        # Create add new project entry variable
+        self.projectName = ctk.StringVar(value = "New project")
+
+        # Create and print widgets
+        self.createWidgets()
+
+    def createWidgets(self):
+        # Create font
+        font = ctk.CTkFont(family = FONT_FAMILY,
+                           size = PROJECT_NAME_SIZE)
+        
+        # Create set project name entry, add button and delete button
+        setProjectNameEntry = ctk.CTkEntry(self,
+                                        width = 120,
+                                        fg_color = DARK_GRAY,
+                                        border_color = DARK_GRAY,
+                                        text_color = WHITE,
+                                        font = font,
+                                        textvariable = self.projectName)
+        
+        addProjectButton = ctk.CTkButton(self,
+                                         width = 30,
+                                         height = 30,
+                                         fg_color = DARK_GRAY,
+                                         hover_color = LIGHT_GRAY,
+                                         text = "+",
+                                         text_color = WHITE,
+                                         font = font)
+        
+        deleteProjectButton = ctk.CTkButton(self,
+                                            width = 30,
+                                            height = 30,
+                                            fg_color = DARK_GRAY,
+                                            hover_color = LIGHT_GRAY,
+                                            text = "-",
+                                            text_color = WHITE,
+                                            font = font)
+        
+        # Print previously created widgets
+        setProjectNameEntry.pack(side = "left", padx = 10, pady = 10)
+        deleteProjectButton.pack(side = "right", padx = (2.5, 10), pady = 10)
+        addProjectButton.pack(side = "right", padx = (10, 2.5), pady = 10)
+        self.pack(fill = "x")

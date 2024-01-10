@@ -13,7 +13,7 @@ class App(ctk.CTk):
         # Set window title, icon, size and position
         self.title("")
         self.iconbitmap("images/icon.ico")
-        self.geometry("230x400+1600+100")
+        self.geometry("230x720+1600+100")
         self.resizable(False, False)
 
         # Set window dark mode and color accent
@@ -32,7 +32,8 @@ class App(ctk.CTk):
         connection = db.connect("tasks.db")
         connection.close()
 
-        # Print pomodoro timer, eating timer and inbox components in the global container
+        # Print timers container, pomodoro timer container, eating timer container, inbox project container, project management bar container and
+        # due project container in the window
         timersFrame = TimersContainer(self)
         
         PomodoroTimer(timersFrame,
@@ -49,9 +50,16 @@ class App(ctk.CTk):
                     self.bother,
                     self)
         
-        Inbox(self,
-              self)
+        Project(self,
+                "Inbox",
+                self)
+        
+        ProjectManagementBar(self)
 
+        Project(self,
+                "Due",
+                self)
+        
         # Show reminder to start a timer
         self.bother()
 
