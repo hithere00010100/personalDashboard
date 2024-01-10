@@ -442,4 +442,12 @@ class ProjectManagementBar(ctk.CTkFrame):
         setProjectNameEntry.pack(side = "left", padx = 10, pady = 10)
         deleteProjectButton.pack(side = "right", padx = (2.5, 10), pady = 10)
         addProjectButton.pack(side = "right", padx = (10, 2.5), pady = 10)
+        # Print general container itself
         self.pack(fill = "x")
+
+        # Create bindings
+        setProjectNameEntry.bind("<FocusIn>", lambda event: self.clearPlaceholder())
+
+    def clearPlaceholder(self):
+        # Clear placeholder when pressing on setProjectNameEntry
+        self.projectName.set(value = "")
