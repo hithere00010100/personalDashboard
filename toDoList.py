@@ -441,7 +441,8 @@ class ProjectManagementBar(ctk.CTkFrame):
                                             hover_color = LIGHT_GRAY,
                                             text = "-",
                                             text_color = WHITE,
-                                            font = font)
+                                            font = font,
+                                            command = self.deleteProject)
         
         # Print previously created widgets
         setProjectNameEntry.pack(side = "left", padx = 10, pady = 10)
@@ -504,3 +505,91 @@ class ProjectManagementBar(ctk.CTkFrame):
 
         # Close database
         connection.close()
+
+    def deleteProject(self):
+        # Open window to select project to delete
+        deleteProjectWindow()        
+
+class deleteProjectWindow(ctk.CTkToplevel):
+    def __init__(self):
+        # Set window color, size and position
+        super().__init__(fg_color = DARKER_GRAY)
+        self.geometry("230x100+1300+500")
+
+        # Create variable to store project to delete name
+        self.projectToDelete = ctk.StringVar()
+
+        # Create fonts, create and print widgets
+        self.createFonts()
+        self.createWidgets()
+
+    def createFonts(self):
+        # Create widgets fonts
+        self.selectedOptionFont = ctk.CTkFont(family = FONT_FAMILY, size = S, weight = "normal")
+        self.otherOptionsFont = ctk.CTkFont(family = FONT_FAMILY, size = XS, weight = "normal")
+        self.buttonFont = ctk.CTkFont(family = FONT_FAMILY, size = S, weight = "normal")
+
+    def createWidgets(self):
+        # Create list with the added projects names
+        self.createProjectsNamesList()
+
+        # Create deletable projects menu and delete button
+        deletableProjectsMenu = ctk.CTkOptionMenu(self,
+                                                  width = 150,
+                                                  fg_color = DARK_GRAY,
+                                                  button_color = DARK_GRAY,
+                                                  button_hover_color = LIGHT_GRAY,
+                                                  dropdown_fg_color = DARK_GRAY,
+                                                  dropdown_hover_color = LIGHT_GRAY,
+                                                  text_color = WHITE,
+                                                  dropdown_text_color = WHITE,
+                                                  font = self.selectedOptionFont,
+                                                  dropdown_font = self.otherOptionsFont,
+                                                  values = self.projectsNamesList,
+                                                  variable = self.projectToDelete)
+        
+        deleteButton = ctk.CTkButton(self,
+                                     width = 50,
+                                     fg_color = DARK_GRAY,
+                                     hover_color = LIGHT_GRAY,
+                                     text_color = WHITE,
+                                     text = "Delete",
+                                     font = self.buttonFont,
+                                     command = self.deleteProject)
+
+        # Print previously created widgets
+        deletableProjectsMenu.pack(pady = 10)
+        deleteButton.pack()
+
+    def createProjectsNamesList(self):
+        # Open database
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
+
+        # Get all database tables names
+        cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
+        projectsNames = cursor.fetchall()
+
+        # Close database
+        connection.close()
+
+        # Clear added projects list
+        self.projectsNamesList = []
+
+        # Fill emptied list with currently added projects names
+        for projectName in projectsNames:
+            self.projectsNamesList.append(projectName[0])
+
+    def deleteProject(self):
+        # Open database
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
+
+        # Delete selected project table from database
+        cursor.execute(f"DROP TABLE {self.projectToDelete.get()}")
+
+        # Save modified database and close it
+        connection.commit()
+        connection.close()
+
+
