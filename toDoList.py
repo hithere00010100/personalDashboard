@@ -396,15 +396,19 @@ class AddTaskWindow(ctk.CTkToplevel):
         self.entryValue.set("Enter task name")
 
 class ProjectManagementBar(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, window):
         # Set project management container master and color
         super().__init__(master = parent, fg_color = DARKER_GRAY)
 
-        # Create add new project entry variable
-        self.projectName = ctk.StringVar(value = "New project")
+        # Bring the app general container here
+        self.window = window
 
-        # Create and print widgets
+        # Create add new project entry variable
+        self.projectName = ctk.StringVar(value = "newProject")
+
+        # Create and print widgets, restore third project
         self.createWidgets()
+        self.restoreProject()
 
     def createWidgets(self):
         # Create font
@@ -427,7 +431,8 @@ class ProjectManagementBar(ctk.CTkFrame):
                                          hover_color = LIGHT_GRAY,
                                          text = "+",
                                          text_color = WHITE,
-                                         font = font)
+                                         font = font,
+                                         command = self.addProject)
         
         deleteProjectButton = ctk.CTkButton(self,
                                             width = 30,
@@ -451,3 +456,51 @@ class ProjectManagementBar(ctk.CTkFrame):
     def clearPlaceholder(self):
         # Clear placeholder when pressing on setProjectNameEntry
         self.projectName.set(value = "")
+
+    def addProject(self):
+        # Open database
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
+
+        # Get database tables number
+        cursor.execute("SELECT COUNT (*) FROM sqlite_master WHERE type = 'table'")
+        tablesNumber = cursor.fetchone()[0]
+
+        # Get whatever the setProjectNameEntry has
+        projectName = self.projectName.get()
+        # Set as add task shortcut the combination of Alt + shortcut
+        shortcut = tablesNumber + 1
+
+        if tablesNumber == 2:
+            # Create and SHOW new project as long as there is space on the app 
+            Project(self.window, projectName, shortcut, self.window)
+
+        # Close database
+        connection.close()
+
+    def restoreProject(self):
+        # Open database
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
+
+        # Get database tables number
+        cursor.execute("SELECT COUNT (*) FROM sqlite_master WHERE type = 'table'")
+        tablesNumber = cursor.fetchone()[0]
+
+        if tablesNumber >= 3:
+            # Get all database tables names
+            cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
+            projectsNames = cursor.fetchall()
+
+            for projectName in projectsNames:
+                # Go through every table name and store the last one
+                projectName = projectName[0]
+            
+            # Set as add task shortcut the combination of Alt + shortcut
+            shortcut = tablesNumber
+
+            # Restore third project when reopening app (if it exists)
+            Project(self.window, projectName, shortcut, self.window)
+
+        # Close database
+        connection.close()
