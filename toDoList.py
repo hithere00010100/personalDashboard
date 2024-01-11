@@ -511,20 +511,25 @@ class ProjectManagementBar(ctk.CTkFrame):
 
     def deleteProject(self):
         # Open window to select project to delete
-        deleteProjectWindow()        
+        deleteProjectWindow()
 
 class deleteProjectWindow(ctk.CTkToplevel):
     def __init__(self):
-        # Set window color, size and position
+        # Set window color, title, size and position
         super().__init__(fg_color = BLACK)
+        self.title("")
         self.geometry("230x100+1300+500")
+        self.resizable(False, False)
+        # Focus on this window
+        self.grab_set()
 
         # Create variable to store project to delete name
         self.projectToDelete = ctk.StringVar()
 
-        # Create fonts, create and print widgets
+        # Create fonts, create and print widgets, create shortcuts
         self.createFonts()
         self.createWidgets()
+        self.createBindings()
 
     def createFonts(self):
         # Create widgets fonts
@@ -563,6 +568,15 @@ class deleteProjectWindow(ctk.CTkToplevel):
         # Print previously created widgets
         deletableProjectsMenu.pack(pady = 10)
         deleteButton.pack()
+
+    def createBindings(self):
+        # Delete project when pressing enter, close window when pressing escape
+        self.bind("<Return>", lambda event: self.deleteProject())
+        self.bind("<Escape>", lambda event: self.closeWindow())
+
+    def closeWindow(self):
+        # Close window when escape is pressed
+        self.destroy()
 
     def createProjectsNamesList(self):
         # Open database
