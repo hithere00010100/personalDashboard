@@ -477,6 +477,10 @@ class ProjectManagementBar(ctk.CTkFrame):
             # Create and SHOW new project as long as there is space on the app 
             Project(self.window, projectName, shortcut, self.window)
 
+        else:
+            # Create but DO NOT SHOW new project if there's a third project that is being showed
+            cursor.execute(f"CREATE TABLE IF NOT EXISTS {self.projectName.get()} (id INTEGER, name TEXT)")
+
         # Close database
         connection.close()
 
