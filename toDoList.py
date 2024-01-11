@@ -408,6 +408,7 @@ class ProjectManagementBar(ctk.CTkFrame):
 
         # Create and print widgets, restore third project
         self.createWidgets()
+        self.createBindings()
         self.restoreProject()
 
     def createWidgets(self):
@@ -416,7 +417,7 @@ class ProjectManagementBar(ctk.CTkFrame):
                            size = M)
         
         # Create set project name entry, add button and delete button
-        setProjectNameEntry = ctk.CTkEntry(self,
+        self.setProjectNameEntry = ctk.CTkEntry(self,
                                         width = 120,
                                         fg_color = DARK_GRAY,
                                         border_color = DARK_GRAY,
@@ -445,14 +446,16 @@ class ProjectManagementBar(ctk.CTkFrame):
                                             command = self.deleteProject)
         
         # Print previously created widgets
-        setProjectNameEntry.pack(side = "left", padx = 10, pady = 10)
+        self.setProjectNameEntry.pack(side = "left", padx = 10, pady = 10)
         deleteProjectButton.pack(side = "right", padx = (2.5, 10), pady = 10)
         addProjectButton.pack(side = "right", padx = (10, 2.5), pady = 10)
         # Print general container itself
         self.pack(fill = "x")
 
-        # Create bindings
-        setProjectNameEntry.bind("<FocusIn>", lambda event: self.clearPlaceholder())
+    def createBindings(self):
+        # When focus is on setProjectNameEntry, clear placeholder; pressing enter when focus is on setProjectNameEntry, add project
+        self.setProjectNameEntry.bind("<FocusIn>", lambda event: self.clearPlaceholder())
+        self.setProjectNameEntry.bind("<Return>", lambda event: self.addProject())
 
     def clearPlaceholder(self):
         # Clear placeholder when pressing on setProjectNameEntry
