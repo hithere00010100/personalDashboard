@@ -599,6 +599,10 @@ class deleteProjectWindow(ctk.CTkToplevel):
         for projectName in projectsNames:
             self.projectsNamesList.append(projectName[0])
 
+        # Do not consider main projects like Inbox and Due
+        self.projectsNamesList.remove("Inbox")
+        self.projectsNamesList.remove("Due")
+
     def deleteProject(self):
         # Open database
         connection = db.connect("tasks.db")
