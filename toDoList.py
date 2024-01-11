@@ -400,8 +400,9 @@ class ProjectManagementBar(ctk.CTkFrame):
         # Set project management container master and color
         super().__init__(master = parent, fg_color = BLACK)
 
-        # Bring the app general container here
+        # Bring the app general container here, initialize some index variable used later
         self.window = window
+        self.a = 1
 
         # Create add new project entry variable
         self.projectName = ctk.StringVar(value = "newProject")
@@ -416,16 +417,39 @@ class ProjectManagementBar(ctk.CTkFrame):
         font = ctk.CTkFont(family = FONT_FAMILY,
                            size = M)
         
-        # Create set project name entry, add button and delete button
+        # Create set project name entry, buttons container, render next project button, delete button and add button
         self.setProjectNameEntry = ctk.CTkEntry(self,
-                                        width = 120,
-                                        fg_color = DARK_GRAY,
-                                        border_color = DARK_GRAY,
-                                        text_color = WHITE,
-                                        font = font,
-                                        textvariable = self.projectName)
+                                                width = 100,
+                                                fg_color = DARK_GRAY,
+                                                border_color = DARK_GRAY,
+                                                text_color = WHITE,
+                                                font = font,
+                                                textvariable = self.projectName)
         
-        addProjectButton = ctk.CTkButton(self,
+        buttonsFrame = ctk.CTkFrame(self,
+                                    fg_color = BLACK)
+        
+        renderNextProjectButton = ctk.CTkButton(buttonsFrame,
+                                                width = 30,
+                                                height = 30,
+                                                fg_color = DARK_GRAY,
+                                                hover_color = LIGHT_GRAY,
+                                                text = ">",
+                                                text_color = WHITE,
+                                                font = font,
+                                                command = self.renderNextProject)
+        
+        deleteProjectButton = ctk.CTkButton(buttonsFrame,
+                                            width = 30,
+                                            height = 30,
+                                            fg_color = DARK_GRAY,
+                                            hover_color = LIGHT_GRAY,
+                                            text = "−",
+                                            text_color = WHITE,
+                                            font = font,
+                                            command = self.deleteProject)
+        
+        addProjectButton = ctk.CTkButton(buttonsFrame,
                                          width = 30,
                                          height = 30,
                                          fg_color = DARK_GRAY,
@@ -435,20 +459,12 @@ class ProjectManagementBar(ctk.CTkFrame):
                                          font = font,
                                          command = self.addProject)
         
-        deleteProjectButton = ctk.CTkButton(self,
-                                            width = 30,
-                                            height = 30,
-                                            fg_color = DARK_GRAY,
-                                            hover_color = LIGHT_GRAY,
-                                            text = "-",
-                                            text_color = WHITE,
-                                            font = font,
-                                            command = self.deleteProject)
-        
         # Print previously created widgets
-        self.setProjectNameEntry.pack(side = "left", padx = 10, pady = 10)
-        deleteProjectButton.pack(side = "right", padx = (2.5, 10), pady = 10)
-        addProjectButton.pack(side = "right", padx = (10, 2.5), pady = 10)
+        self.setProjectNameEntry.pack(fill = "x", padx = 10, pady = (10, 5))
+        buttonsFrame.pack(padx = 10, pady = (5, 10))
+        renderNextProjectButton.pack(side = "right", padx = (2.5, 0))
+        deleteProjectButton.pack(side = "right", padx = (2.5, 2.5))
+        addProjectButton.pack(side = "right", padx = (0, 2.5))
         # Print general container itself
         self.pack(fill = "x")
 
@@ -470,12 +486,10 @@ class ProjectManagementBar(ctk.CTkFrame):
 
         # Get whatever the setProjectNameEntry has
         projectName = self.projectName.get()
-        # Set as add task shortcut the combination of Alt + shortcut
-        shortcut = tablesNumber + 1
 
         if tablesNumber == 2:
             # Create and SHOW new project as long as there is space on the app 
-            Project(self.window, projectName, shortcut, self.window)
+            self.thirdProject = Project(self.window, projectName, 3, self.window)
 
         else:
             # Create but DO NOT SHOW new project if there's a third project that is being showed
@@ -504,19 +518,16 @@ class ProjectManagementBar(ctk.CTkFrame):
             for projectName in projectsNames:
                 # Go through every table name and store the last one
                 projectName = projectName[0]
-            
-            # Set as add task shortcut the combination of Alt + shortcut
-            shortcut = tablesNumber
 
             # Restore third project when reopening app (if it exists)
-            Project(self.window, projectName, shortcut, self.window)
+            self.thirdProject = Project(self.window, projectName, 3, self.window)
 
         # Close database
         connection.close()
 
     def deleteProject(self):
         # Open window to select project to delete
-        deleteProjectWindow()
+        deleteProjectWindow(self.createProjectsNamesList)
 
     def clearPlaceholder(self):
         # Clear placeholder when pressing on setProjectNameEntry
@@ -529,8 +540,55 @@ class ProjectManagementBar(ctk.CTkFrame):
         # Set focus on the window instead of anything else
         self.window.focus()
 
+    def createProjectsNamesList(self):
+        # Open database
+        connection = db.connect("tasks.db")
+        cursor = connection.cursor()
+
+        # Get all database tables names
+        cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
+        projectsNames = cursor.fetchall()
+
+        # Close database
+        connection.close()
+
+        # Clear added projects list
+        projectsNamesList = []
+
+        # Fill emptied list with currently added projects names
+        for projectName in projectsNames:
+            projectsNamesList.append(projectName[0])
+
+        # Do not consider main projects like Inbox and Due
+        projectsNamesList.remove("Inbox")
+        projectsNamesList.remove("Due")
+
+        # Return secondary projects list
+        return projectsNamesList
+
+    def renderNextProject(self):
+        # Stop displaying current third project
+        self.thirdProject.pack_forget()
+
+        # Create secondary projects names list, grab and store next project name
+        projectsNamesList = self.createProjectsNamesList()
+        nextProjectName = projectsNamesList[self.a]
+
+        # Display next project
+        self.thirdProject = Project(self.window, nextProjectName, 3, self.window)
+
+        # Go to the next of the next project
+        self.a += 1
+
+        # Get the last index plus one (meaning, a non existing index on the list)
+        nonExistingProjectIndex = len(projectsNamesList)
+
+        if self.a == nonExistingProjectIndex:
+            # Go back to the first project
+            self.a = 0
+
 class deleteProjectWindow(ctk.CTkToplevel):
-    def __init__(self):
+    def __init__(self, createProjectsNamesList):
         # Set window color, title, size and position
         super().__init__(fg_color = BLACK)
         self.title("")
@@ -538,6 +596,8 @@ class deleteProjectWindow(ctk.CTkToplevel):
         self.resizable(False, False)
         # Focus on this window
         self.grab_set()
+
+        self.createProjectsNamesList = createProjectsNamesList
 
         # Create variable to store project to delete name
         self.projectToDelete = ctk.StringVar()
@@ -555,7 +615,7 @@ class deleteProjectWindow(ctk.CTkToplevel):
 
     def createWidgets(self):
         # Create list with the added projects names
-        self.createProjectsNamesList()
+        projectsNamesList = self.createProjectsNamesList()
 
         # Create deletable projects menu
         deletableProjectsMenu = ctk.CTkOptionMenu(self,
@@ -569,7 +629,7 @@ class deleteProjectWindow(ctk.CTkToplevel):
                                                   dropdown_text_color = WHITE,
                                                   font = self.selectedOptionFont,
                                                   dropdown_font = self.otherOptionsFont,
-                                                  values = self.projectsNamesList,
+                                                  values = projectsNamesList,
                                                   variable = self.projectToDelete)
         
         # Print previously created widgets
@@ -583,29 +643,6 @@ class deleteProjectWindow(ctk.CTkToplevel):
     def closeWindow(self):
         # Close window when escape is pressed
         self.destroy()
-
-    def createProjectsNamesList(self):
-        # Open database
-        connection = db.connect("tasks.db")
-        cursor = connection.cursor()
-
-        # Get all database tables names
-        cursor.execute("SELECT name FROM sqlite_master WHERE type = 'table'")
-        projectsNames = cursor.fetchall()
-
-        # Close database
-        connection.close()
-
-        # Clear added projects list
-        self.projectsNamesList = []
-
-        # Fill emptied list with currently added projects names
-        for projectName in projectsNames:
-            self.projectsNamesList.append(projectName[0])
-
-        # Do not consider main projects like Inbox and Due
-        self.projectsNamesList.remove("Inbox")
-        self.projectsNamesList.remove("Due")
 
     def deleteProject(self):
         # Open database
