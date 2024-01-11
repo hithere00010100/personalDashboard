@@ -530,7 +530,7 @@ class deleteProjectWindow(ctk.CTkToplevel):
         # Set window color, title, size and position
         super().__init__(fg_color = BLACK)
         self.title("")
-        self.geometry("230x100+1300+500")
+        self.geometry("230x50+1300+500")
         self.resizable(False, False)
         # Focus on this window
         self.grab_set()
@@ -553,7 +553,7 @@ class deleteProjectWindow(ctk.CTkToplevel):
         # Create list with the added projects names
         self.createProjectsNamesList()
 
-        # Create deletable projects menu and delete button
+        # Create deletable projects menu
         deletableProjectsMenu = ctk.CTkOptionMenu(self,
                                                   width = 150,
                                                   fg_color = DARK_GRAY,
@@ -568,18 +568,8 @@ class deleteProjectWindow(ctk.CTkToplevel):
                                                   values = self.projectsNamesList,
                                                   variable = self.projectToDelete)
         
-        deleteButton = ctk.CTkButton(self,
-                                     width = 50,
-                                     fg_color = DARK_GRAY,
-                                     hover_color = LIGHT_GRAY,
-                                     text_color = WHITE,
-                                     text = "Delete",
-                                     font = self.buttonFont,
-                                     command = self.deleteProject)
-
         # Print previously created widgets
         deletableProjectsMenu.pack(pady = 10)
-        deleteButton.pack()
 
     def createBindings(self):
         # Delete project when pressing enter, close window when pressing escape
