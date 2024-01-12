@@ -470,10 +470,14 @@ class ProjectManagementBar(ctk.CTkFrame):
 
     def createBindings(self):
         # When focus is on setProjectNameEntry, clear placeholder; pressing enter when focus is on setProjectNameEntry, add project;
-        # When losing setProjectNameEntry focus, restore placeholder
+        # when losing setProjectNameEntry focus, restore placeholder; when escape is pressed on setProjectNameEntry, focus window;
+        # when alt + a is pressed, focus setProjectNameEntry; when alt + d is pressed, open delete project window
         self.setProjectNameEntry.bind("<FocusIn>", lambda event: self.clearPlaceholder())
         self.setProjectNameEntry.bind("<FocusOut>", lambda event: self.restorePlaceholder())
         self.setProjectNameEntry.bind("<Return>", lambda event: self.addProject())
+        self.setProjectNameEntry.bind("<Escape>", lambda event: self.loseCurrentFocus())
+        self.window.bind("<Alt-KeyPress-a>", lambda event: self.focusOnProjectEntry())
+        self.window.bind("<Alt-KeyPress-d>", lambda event: self.deleteProject())
 
     def addProject(self):
         # Open database
@@ -539,6 +543,9 @@ class ProjectManagementBar(ctk.CTkFrame):
     def loseCurrentFocus(self):
         # Set focus on the window instead of anything else
         self.window.focus()
+
+    def focusOnProjectEntry(self):
+        self.setProjectNameEntry.focus()
 
     def createProjectsNamesList(self):
         # Open database
