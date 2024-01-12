@@ -173,10 +173,8 @@ class PomodoroTimer(ctk.CTkFrame):
         # Print global container itself
         self.pack(side = "left", padx = 10, pady = 10)
 
-        # Create keyboard shortcuts
-        self.window.bind("<KeyPress-1>", lambda event: self.triggerTimer())
-        self.window.bind("<KeyPress-r>", lambda event: self.resetTimer())
-        self.window.bind("<KeyPress-s>", lambda event: self. skipTimer())
+        # Create start/stop shortcut
+        self.window.bind("<Alt-KeyPress-q>", lambda event: self.triggerTimer())
 
     def triggerTimer(self):
         if self.isTimerRunning.get() == False:
@@ -186,6 +184,10 @@ class PomodoroTimer(ctk.CTkFrame):
             # Start pomodoro timer but stop eating timer
             self.isTimerRunning.set(value = True)
             self.isTimer2Running.set(value = False)
+
+            # Create pomodoro timer buttons shortcuts when it is started
+            self.window.bind("<Alt-KeyPress-r>", lambda event: self.resetTimer())
+            self.window.bind("<Alt-KeyPress-s>", lambda event: self. skipTimer())
 
             if self.isFirstTimeRunning == True:
                 # Start counting but only once
@@ -198,6 +200,10 @@ class PomodoroTimer(ctk.CTkFrame):
 
             # Stop counting
             self.isTimerRunning.set(value = False)
+
+            # Delete pomodoro timer buttons shortcuts when it is stopped
+            self.window.unbind("<Alt-KeyPress-r>")
+            self.window.unbind("<Alt-KeyPress-s>")
 
             if self.isBothering.get() == False:
                 # Show start a timer reminder every minute as long as there's no active alerts
@@ -325,16 +331,18 @@ class EatingTimer(ctk.CTkFrame):
         # Print global container itself
         self.pack(side = "left")
 
-        # Create keyboard shortcuts
-        self.window.bind("<KeyPress-2>", lambda event: self.triggerTimer())
-        self.window.bind("<Alt-KeyPress-r>", lambda event: self.resetTimer())
-        self.window.bind("<Alt-KeyPress-s>", lambda event: self. switchTimer())
+        # Create start/stop shortcut
+        self.window.bind("<Alt-KeyPress-e>", lambda event: self.triggerTimer())
 
     def triggerTimer(self):
         if self.isTimerRunning.get() == False:
             # Start eating timer but stop pomodoro timer
             self.isTimerRunning.set(value = True)
             self.isTimer1Running.set(value = False)
+
+            # Create eating timer buttons shortcuts when it is started
+            self.window.bind("<Alt-KeyPress-r>", lambda event: self.resetTimer())
+            self.window.bind("<Alt-KeyPress-s>", lambda event: self. switchTimer())
             
             # Start timer only once
             if(self.isFirstTimeRunning == True):
@@ -348,6 +356,10 @@ class EatingTimer(ctk.CTkFrame):
             self.isTimerRunning.set(value = False)
             self.bother()
 
+            # Delete eating timer buttons shortcuts when it is stopped
+            self.window.unbind("<Alt-KeyPress-r>")
+            self.window.unbind("<Alt-KeyPress-s>")
+            
     def updateTimer(self):
         if self.isTimerRunning.get() == True:
             # Reduce a second and set that reduced value in the time label
