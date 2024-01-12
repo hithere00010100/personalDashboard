@@ -178,9 +178,10 @@ class Project(ctk.CTkFrame):
             # Add task name as the textbox default value
             self.taskTextbox.insert(1.0, taskName[0])
 
-            # Create bindings to expand and collapse textbox on hover and off hover
+            # Create bindings to expand and collapse textbox on hover and off hover; when focus is on textbox and escape is pressed, focus window
             self.taskTextbox.bind("<Enter>", lambda event: self.expandTaskTextbox(event))
             self.taskTextbox.bind("<Leave>", lambda event: self.collapseTaskTextbox(event))
+            self.taskTextbox.bind("<Escape>", lambda event: self.loseCurrentFocus())
 
             # Print previous widgets in the added tasks container
             taskFrame.pack(fill = "x", padx = (0, 2), pady = (0, 2))
@@ -264,9 +265,10 @@ class Project(ctk.CTkFrame):
         # Add task name as the textbox default value
         self.taskTextbox.insert(1.0, taskName[0])
 
-        # Create bindings to expand and collapse textbox on hover and off hover
+        # Create bindings to expand and collapse textbox on hover and off hover; when focus is on textbox and escape is pressed, focus window
         self.taskTextbox.bind("<Enter>", lambda event: self.expandTaskTextbox(event))
         self.taskTextbox.bind("<Leave>", lambda event: self.collapseTaskTextbox(event))
+        self.taskTextbox.bind("<Escape>", lambda event: self.loseCurrentFocus())
 
         # Print previous widgets in the added tasks container
         taskFrame.pack(fill = "x", padx = (0, 2), pady = (0, 2))
@@ -332,6 +334,10 @@ class Project(ctk.CTkFrame):
     def collapseTaskTextbox(self, event):
         # Go back to the previous textbox height
         event.widget.configure(height = 1)
+
+    def loseCurrentFocus(self):
+        # Set focus on the window instead of anything else
+        self.window.focus()
 
 class AddTaskWindow(ctk.CTkToplevel):
     def __init__(self, entryValue, addTask):
