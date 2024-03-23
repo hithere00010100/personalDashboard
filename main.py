@@ -13,7 +13,7 @@ class App(ctk.CTk):
         # Set window title, icon, size and position
         self.title("")
         self.iconbitmap("images/icon.ico")
-        self.geometry("230x1010+1690+0")
+        self.geometry("230x380+1680+0")
         self.resizable(False, False)
 
         # Set window dark mode and color accent
