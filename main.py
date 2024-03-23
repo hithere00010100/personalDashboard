@@ -54,14 +54,6 @@ class App(ctk.CTk):
                 "Inbox",
                 1,
                 self)
-
-        Project(self,
-                "Due",
-                2,
-                self)
-
-        ProjectManagementBar(self,
-                             self)
         
         # Show reminder to start a timer
         self.bother()
